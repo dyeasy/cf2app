@@ -1,0 +1,21 @@
+html,body{
+    height: 100vh;
+}
+
+body{
+    margin: 0;
+}
+
+#root{
+    height: 100vh;
+    .container{
+        /* height: 100vh;
+        display: grid;
+        grid-template-columns: 400px 1fr;
+        gap:20px;
+        >div{
+            border:2px solid rgba(0,0,0,0.6);
+            border-radius: 6px;
+        } */
+    }
+}
