@@ -13,6 +13,7 @@ pub use walkdir::WalkDir; // 如果外面也要用 WalkDir，可以 pub use
 // 必须 pub 才能被外面看到
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SceneMetaData {
+    pub key: String,
     pub actions: Vec<String>,
     pub views: Vec<String>,
     #[serde(rename = "sceneData")]
@@ -47,7 +48,7 @@ pub fn create_global_matcher(patterns: &[&str]) -> Result<GlobSet, Box<dyn Error
 pub fn get_target_files<P: AsRef<Path>>(
     url: P,
 ) -> impl Iterator<Item = walkdir::Result<walkdir::DirEntry>> {
-    const EXCLUSION_LIST: [&str; 3] = ["README.md", "__tests__", ".DS_Store"];
+    const EXCLUSION_LIST: [&str; 4] = ["README.md", "__tests__", ".DS_Store", "component"];
     WalkDir::new(url)
         .min_depth(1)
         .max_depth(3)

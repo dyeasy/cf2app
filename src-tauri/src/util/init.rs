@@ -16,6 +16,10 @@ pub fn run_init_logic(
 
     let target_dir_path = Path::new(base_path).join(TARGET_SCENE_DIR);
 
+    if !target_dir_path.exists(){
+       return Err(format!("目标目录不存在: {:?}", target_dir_path).into());
+    }
+
     let matcher_router = scanner::create_global_matcher(&[
         "**/actions/*.ts",
         "**/actions.ts",
@@ -48,6 +52,7 @@ pub fn run_init_logic(
                     all_scene
                         .entry(scene_id.to_string())
                         .or_insert(scanner::SceneMetaData {
+                            key: scene_id.to_string(),
                             actions: Vec::new(),
                             views: Vec::new(),
                             scene_config: scanner::SceneConfig {

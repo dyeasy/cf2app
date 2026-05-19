@@ -9,7 +9,7 @@ import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import { SetProjectTarget } from "./Components/SetProjectTarget";
 import { SceneCard } from "./Components/SceneCard";
-import { Button, Layout, Result, Space, Statistic } from "antd";
+import { Button, Layout, Result, Space, Statistic, notification } from "antd";
 import { PageContainer, ProLayout } from "@ant-design/pro-components";
 import "./App.css";
 import { LikeOutlined } from "@ant-design/icons";
@@ -28,22 +28,29 @@ function App() {
   async function getConfig() {
     try {
       const config = await invoke("get_config");
-      console.log("configconfig0000", config, typeof config);
       setConfig(config);
       if (!!config) {
-        invoke("get_all_scenes")
+        await invoke("get_all_scenes")
           .then((res) => {
             const _res = res as ICardItemType[] | undefined;
             if (!!_res?.length) {
               setCardData(_res);
             }
           })
+          .catch((err) => {
+            throw err;
+          })
           .finally(() => {
             setLoading(false);
           });
       }
     } catch (error) {
-      console.error("Failed to get config:", error);
+      if (!!error && typeof error === "object" && "message" in error) {
+        notification.error({
+          message: "Error",
+          description: error.message as string
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -61,7 +68,7 @@ function App() {
             title="Hello World"
             subTitle="Sorry, you are not authorized to access this page."
           /> */}
-        {!!config ? <SceneCard /> : <SetProjectTarget />}
+        {!!config ? <SceneCard data={cardData} /> : <SetProjectTarget />}
       </PageContainer>
     </ProLayout>
   );

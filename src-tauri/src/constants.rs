@@ -7,4 +7,4 @@
 pub const STORE_CONFIG_NAME: &str = "appconfig.json";
 pub const STORE_KEY_PATH: &str = "project_path";
 pub const BUSINESS_ERROR_CODE: i32 = 9999;
-pub const TARGET_SCENE_DIR: &str = "fastman2-business-scenes";
+pub const TARGET_SCENE_DIR: &str = "packages/fastman2-business-scenes";
