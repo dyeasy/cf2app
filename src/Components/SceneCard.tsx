@@ -5,9 +5,9 @@
  * @Description:
  */
 import { CheckCard } from "@ant-design/pro-components";
-import { Card } from "antd";
+import { Card, Tag } from "antd";
 import { ICardItemType } from "../typing";
-import { EyeOutlined } from "@ant-design/icons";
+import { AppstoreOutlined, EyeOutlined } from "@ant-design/icons";
 
 interface ISceneCardProps {
   data?: ICardItemType[];
@@ -18,9 +18,17 @@ export function SceneCard(props: ISceneCardProps) {
   return data.map((m) => {
     return (
       <CheckCard
-        title={m.sceneData.title}
+        title={
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <AppstoreOutlined />
+            <span style={{ marginInlineEnd: 8, marginInlineStart: 8 }}>
+              {m.sceneData.title}
+            </span>
+          </div>
+        }
         key={m.key}
-        actions={[<EyeOutlined />]}
+        description={m.sceneData.description}
+        actions={[1, 2, <div>预览</div>]}
       >
         {/* <Card.Meta
           title={m.sceneData.title}

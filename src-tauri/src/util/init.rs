@@ -57,7 +57,7 @@ pub fn run_init_logic(
                             views: Vec::new(),
                             scene_config: scanner::SceneConfig {
                                 title: String::new(),
-                                description: String::new(),
+                                ..Default::default()
                             },
                         });
                 let target = scanner::file_target_type(

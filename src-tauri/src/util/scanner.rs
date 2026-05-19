@@ -20,11 +20,13 @@ pub struct SceneMetaData {
     pub scene_config: SceneConfig,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct SceneConfig {
     pub title: String,
     #[serde(default)]
     pub description: String,
+    #[serde(default)]
+    pub disabled: bool,
 }
 
 pub enum FileTarget {
