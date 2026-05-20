@@ -19,8 +19,17 @@ pub struct SceneMetaData {
     pub views: Vec<String>,
     #[serde(rename = "modifiedTime")]
     pub modified_time: Option<String>,
+    #[serde(rename = "gitData")]
+    pub git_data: GitData,
     #[serde(rename = "sceneData")]
     pub scene_config: SceneConfig,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct GitData {
+    pub modified_time: String,      // 最后提交时间（格式化后的文本）
+    pub last_commit_author: String, // 最新修改人姓名
+    pub author_email: String,       // 最新修改人邮箱
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]

@@ -1,13 +1,12 @@
-use chrono::{DateTime, Local};
-
 /*
  * @Author: jiangxin
  * @Date: 2026-04-15 14:16:04
  * @Company: orientsec.com.cn
  * @Description:
  */
-use crate::{constants::TARGET_SCENE_DIR, scanner};
+use crate::{constants::TARGET_SCENE_DIR, git::get_git_data, scanner};
 use std::{collections::HashMap, path::Path};
+use chrono::{DateTime, Local};
 
 pub fn run_init_logic(
     path: &str,

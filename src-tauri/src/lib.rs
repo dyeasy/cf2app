@@ -11,6 +11,7 @@ pub mod util {
     pub mod init;
     pub mod scanner;
     pub mod useconfig;
+    pub mod git;
 }
 
 // use std::collections::HashMap;
@@ -22,10 +23,10 @@ use tauri::ipc::Invoke;
 use tauri::AppHandle;
 use tauri::Manager;
 use tauri_plugin_store::StoreBuilder;
-use tauri_plugin_store::StoreExt;
 pub use util::init;
 pub use util::scanner;
 pub use util::useconfig;
+pub use util::git;
 
 use crate::constants::{STORE_CONFIG_NAME, STORE_KEY_PATH};
 
