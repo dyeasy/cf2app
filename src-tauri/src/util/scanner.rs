@@ -5,6 +5,7 @@
  * @Description:
  */
 
+use chrono::{DateTime, Local};
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use serde::{Deserialize, Serialize};
 use std::{error::Error, fs, path::Path};
@@ -16,6 +17,8 @@ pub struct SceneMetaData {
     pub key: String,
     pub actions: Vec<String>,
     pub views: Vec<String>,
+    #[serde(rename = "modifiedTime")]
+    pub modified_time: Option<String>,
     #[serde(rename = "sceneData")]
     pub scene_config: SceneConfig,
 }

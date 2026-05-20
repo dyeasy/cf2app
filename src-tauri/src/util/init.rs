@@ -1,3 +1,5 @@
+use chrono::{DateTime, Local};
+
 /*
  * @Author: jiangxin
  * @Date: 2026-04-15 14:16:04
@@ -16,8 +18,8 @@ pub fn run_init_logic(
 
     let target_dir_path = Path::new(base_path).join(TARGET_SCENE_DIR);
 
-    if !target_dir_path.exists(){
-       return Err(format!("目标目录不存在: {:?}", target_dir_path).into());
+    if !target_dir_path.exists() {
+        return Err(format!("目标目录不存在: {:?}", target_dir_path).into());
     }
 
     let matcher_router = scanner::create_global_matcher(&[
@@ -48,6 +50,15 @@ pub fn run_init_logic(
                     continue;
                 };
 
+                let folder_time = path
+                    .metadata()
+                    .ok()
+                    .and_then(|meta| meta.modified().ok())
+                    .map(|sys_time| {
+                        let datetime: DateTime<Local> = sys_time.into();
+                        datetime.format("%Y-%m-%d %H:%M:%S").to_string()
+                    });
+
                 let metadata =
                     all_scene
                         .entry(scene_id.to_string())
@@ -55,6 +66,7 @@ pub fn run_init_logic(
                             key: scene_id.to_string(),
                             actions: Vec::new(),
                             views: Vec::new(),
+                            modified_time: folder_time,
                             scene_config: scanner::SceneConfig {
                                 title: String::new(),
                                 ..Default::default()
@@ -81,7 +93,7 @@ pub fn run_init_logic(
                     }
                     scanner::FileTarget::Config(config) => {
                         metadata.scene_config = config;
-                        println!("✅ 成功加载配置: {:?}", metadata.scene_config.title);
+                        // println!("✅ 成功加载配置: {:?}", metadata.scene_config.title);
                     }
                     scanner::FileTarget::Ignore => {}
                 }
@@ -89,6 +101,6 @@ pub fn run_init_logic(
             Err(e) => println!("Error: {:?}", e),
         }
     }
-    println!("{:#?}", all_scene);
+    // println!("{:#?}", all_scene);
     Ok(all_scene)
 }

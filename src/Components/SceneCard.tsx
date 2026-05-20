@@ -26,14 +26,15 @@ export function SceneCard(props: ISceneCardProps) {
             </span>
           </div>
         }
+        disabled={m.sceneData.disabled}
         key={m.key}
-        description={m.sceneData.description}
+        description={
+          <div>
+            <Tag>{m.modifiedTime}</Tag>
+          </div>
+        }
         actions={[1, 2, <div>预览</div>]}
       >
-        {/* <Card.Meta
-          title={m.sceneData.title}
-          description={m.sceneData.description}
-        /> */}
       </CheckCard>
     );
   });
