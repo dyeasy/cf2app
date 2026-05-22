@@ -77,12 +77,6 @@ function App() {
             <Descriptions.Item label="项目">{projectPath}</Descriptions.Item>
           </Descriptions>
         }
-        footer={[
-          <Button key="3">重置</Button>,
-          <Button key="2" type="primary">
-            提交
-          </Button>
-        ]}
         loading={loading}
       >
         {/* <Result
