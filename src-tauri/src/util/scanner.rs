@@ -19,8 +19,8 @@ pub struct SceneMetaData {
     pub views: Vec<String>,
     #[serde(rename = "modifiedTime")]
     pub modified_time: Option<String>,
-    #[serde(rename = "gitData")]
-    pub git_data: GitData,
+    // #[serde(rename = "gitData")]
+    // pub git_data: GitData,
     #[serde(rename = "sceneData")]
     pub scene_config: SceneConfig,
 }
