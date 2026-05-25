@@ -4,25 +4,33 @@
  * @Company: orientsec.com.cn
  * @Description:
  */
+import { useState } from "react";
 import { ProList } from "@ant-design/pro-components";
 import type { ProColumns } from "@ant-design/pro-components";
-import { Card, Tag, Form, Button, FloatButton, Space, Avatar } from "antd";
+import {
+  Card,
+  Tag,
+  Form,
+  Button,
+  FloatButton,
+  Space,
+  Avatar,
+  Drawer
+} from "antd";
 import { ICardItemType } from "../typing";
 import { AppstoreTwoTone, ClearOutlined } from "@ant-design/icons";
-
+import { EditCardDrawer } from "./EditCard";
 import style from "./scenecard.module.scss";
-import { useState } from "react";
 interface ISceneCardProps {
   data?: ICardItemType[];
 }
 
 export function SceneCard(props: ISceneCardProps) {
-  //   const [selectCard, setSelectCard] = useState<string[]>();
+  const [selectCard, setSelectCard] = useState<ICardItemType[]>();
   const [open, setOpen] = useState(false);
   const { data: dataSource = [] } = props;
-  //   const onChange: CheckCardGroupProps["onChange"] = function (value) {
-  //     setSelectCard(value as string[]);
-  //   };
+
+  console.log('dataSourcedataSource',dataSource)
 
   const columns: ProColumns<ICardItemType>[] = [
     {
@@ -59,42 +67,44 @@ export function SceneCard(props: ISceneCardProps) {
       <ProList<ICardItemType>
         rowKey="key"
         pagination={false}
-        rowSelection={{}}
+        rowSelection={{
+          selectedRowKeys: selectCard?.map((m) => m.key),
+          onChange(selectedRowKeys, selectedRows, info) {
+            console.log("fdsafdsa", selectedRowKeys);
+            setSelectCard(selectedRows);
+          }
+        }}
         grid={{ gutter: 12, column: 3 }}
         columns={columns}
         headerTitle="场景"
         dataSource={dataSource}
-        tableAlertOptionRender={false}
-        tableAlertRender={({ selectedRows, onCleanSelected }) => {
-          return (
-            <FloatButton.Group shape="circle" open={true} style={{ right: 10 }}>
-              <FloatButton
-                icon={<ClearOutlined />}
-                disabled={!selectedRows?.length}
-                tooltip="清空先中的场景"
-                onClick={onCleanSelected}
-              />
-              <FloatButton
-                badge={{ count: selectedRows?.length, overflowCount: 999 }}
-                onClick={!!selectedRows?.length ? () => setOpen(true) : void 0}
-              />
-            </FloatButton.Group>
-          );
-        }}
+        tableAlertRender={false}
         className={style.scenecard}
         search={{
           filterType: "query"
         }}
       />
-      {/*
-      <DrawerForm
-        open={open}
+      <FloatButton.Group shape="circle" open={true} style={{ right: 10 }}>
+        <FloatButton
+          icon={<ClearOutlined />}
+          disabled={!selectCard?.length}
+          tooltip="清空选中场景"
+          onClick={() => setSelectCard([])}
+        />
+        <FloatButton
+          badge={{ count: selectCard?.length, overflowCount: 999 }}
+          onClick={!!selectCard?.length ? () => setOpen(true) : void 0}
+        />
+      </FloatButton.Group>
+      <EditCardDrawer
+        data={selectCard}
         drawerProps={{
+          open,
           onClose() {
             setOpen(false);
           }
         }}
-      />*/}
+      />
     </>
   );
 }
