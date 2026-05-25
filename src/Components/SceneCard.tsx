@@ -4,21 +4,11 @@
  * @Company: orientsec.com.cn
  * @Description:
  */
-import {
-  CheckCard,
-  ProForm,
-  CheckCardGroupProps,
-  DrawerForm
-} from "@ant-design/pro-components";
-import { Card, Tag, Form, Button, FloatButton } from "antd";
+import { ProList } from "@ant-design/pro-components";
+import type { ProColumns } from "@ant-design/pro-components";
+import { Card, Tag, Form, Button, FloatButton, Space, Avatar } from "antd";
 import { ICardItemType } from "../typing";
-import {
-  AppstoreOutlined,
-  ClearOutlined,
-  CustomerServiceOutlined,
-  EyeOutlined,
-  QuestionCircleOutlined
-} from "@ant-design/icons";
+import { AppstoreTwoTone, ClearOutlined } from "@ant-design/icons";
 
 import style from "./scenecard.module.scss";
 import { useState } from "react";
@@ -27,39 +17,76 @@ interface ISceneCardProps {
 }
 
 export function SceneCard(props: ISceneCardProps) {
-  const [selectCard, setSelectCard] = useState<string[]>();
+  //   const [selectCard, setSelectCard] = useState<string[]>();
   const [open, setOpen] = useState(false);
-  const { data = [] } = props;
-  const onChange: CheckCardGroupProps["onChange"] = function (value) {
-    setSelectCard(value as string[]);
-  };
+  const { data: dataSource = [] } = props;
+  //   const onChange: CheckCardGroupProps["onChange"] = function (value) {
+  //     setSelectCard(value as string[]);
+  //   };
+
+  const columns: ProColumns<ICardItemType>[] = [
+    {
+      title: "图标",
+      search: false,
+      render() {
+        return (
+          <Avatar
+            style={{ marginInlineEnd: 10 }}
+            icon={<AppstoreTwoTone />}
+            size="small"
+          />
+        );
+      },
+      listSlot: "avatar"
+    },
+    {
+      title: "场景名称",
+      dataIndex: ["sceneData", "title"],
+      listSlot: "title"
+    },
+    {
+      title: "操作",
+      listSlot: "actions",
+      render: () => [
+        <a key="view" onClick={(e) => e.stopPropagation()}>
+          查看
+        </a>
+      ]
+    }
+  ];
   return (
     <>
-      <CheckCard.Group multiple onChange={onChange} value={selectCard}>
-        {data.map((m) => {
+      <ProList<ICardItemType>
+        rowKey="key"
+        pagination={false}
+        rowSelection={{}}
+        grid={{ gutter: 12, column: 3 }}
+        columns={columns}
+        headerTitle="场景"
+        dataSource={dataSource}
+        tableAlertOptionRender={false}
+        tableAlertRender={({ selectedRows, onCleanSelected }) => {
           return (
-            <CheckCard
-              title={
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <AppstoreOutlined />
-                  <span style={{ marginInlineEnd: 8, marginInlineStart: 8 }}>
-                    {m.sceneData.title}
-                  </span>
-                </div>
-              }
-              disabled={m.sceneData.disabled}
-              key={m.key}
-              value={m.key}
-              description={
-                <div>
-                  <Tag>{m.modifiedTime}</Tag>
-                </div>
-              }
-              actions={[1, 2, <div>预览</div>]}
-            />
+            <FloatButton.Group shape="circle" open={true} style={{ right: 10 }}>
+              <FloatButton
+                icon={<ClearOutlined />}
+                disabled={!selectedRows?.length}
+                tooltip="清空先中的场景"
+                onClick={onCleanSelected}
+              />
+              <FloatButton
+                badge={{ count: selectedRows?.length, overflowCount: 999 }}
+                onClick={!!selectedRows?.length ? () => setOpen(true) : void 0}
+              />
+            </FloatButton.Group>
           );
-        })}
-      </CheckCard.Group>
+        }}
+        className={style.scenecard}
+        search={{
+          filterType: "query"
+        }}
+      />
+      {/*
       <DrawerForm
         open={open}
         drawerProps={{
@@ -67,19 +94,7 @@ export function SceneCard(props: ISceneCardProps) {
             setOpen(false);
           }
         }}
-      />
-      <FloatButton.Group shape="circle" open={true}>
-        <FloatButton
-          icon={<ClearOutlined />}
-          disabled={!selectCard?.length}
-          tooltip="清空先中的场景"
-          onClick={() => setSelectCard([])}
-        />
-        <FloatButton
-          badge={{ count: selectCard?.length, overflowCount: 999 }}
-          onClick={!!selectCard?.length ? () => setOpen(true) : void 0}
-        />
-      </FloatButton.Group>
+      />*/}
     </>
   );
 }

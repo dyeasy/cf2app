@@ -1,4 +1,5 @@
-.sceneCard {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+.scenecard {
+    :global(.ant-pro-table-alert) {
+        // display: none;
+    }
 }

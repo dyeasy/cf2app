@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import { SetProjectTarget } from "./Components/SetProjectTarget";
-import { SceneCard } from "./Components/SceneCard";
+import {SceneCard} from "./Components/SceneCard";
 import {
   Button,
   Descriptions,
