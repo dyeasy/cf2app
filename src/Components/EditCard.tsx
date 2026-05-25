@@ -11,7 +11,7 @@ import {
   EditableProTable,
   ProDescriptions
 } from "@ant-design/pro-components";
-import { FunctionComponent } from "react";
+import { FunctionComponent, useState } from "react";
 import { ICardItemType } from "@/typing";
 import { AppstoreTwoTone } from "@ant-design/icons";
 import { ExpandableConfig } from "antd/es/table/interface";
@@ -25,6 +25,7 @@ interface IEditCardDrawerProps {
 export const EditCardDrawer: FunctionComponent<IEditCardDrawerProps> = (
   props
 ) => {
+  const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([]);
   const { drawerProps, data } = props;
   const columns: ProColumns<ICardItemType>[] = [
     {
@@ -32,17 +33,19 @@ export const EditCardDrawer: FunctionComponent<IEditCardDrawerProps> = (
       dataIndex: ["sceneData", "title"]
     },
     {
-      title: "onPageInit"
+      title: "onPageInit",
+      valueType: "select"
     },
     {
-      title: "onClick"
+      title: "onClick",
+      valueType: "select"
     },
     {
       title: "操作",
       valueType: "option",
-      render: () => [
-        <a key="view" onClick={(e) => e.stopPropagation()}>
-          查看
+      render: (text, record, _, action) => [
+        <a key="editable" onClick={() => action?.startEditable?.(record.key)}>
+          编辑
         </a>
       ]
     }
@@ -62,14 +65,14 @@ export const EditCardDrawer: FunctionComponent<IEditCardDrawerProps> = (
               dataIndex: "key",
               valueType: "text",
               span: 2,
-              render(dom, entity, index, action, schema) {
+              render(_, entity) {
                 return <Tag color="magenta">{entity?.key}</Tag>;
               }
             },
             {
               title: "页面",
               dataIndex: "views",
-              render(dom, entity, index, action, schema) {
+              render(_, entity) {
                 return (
                   <div>
                     {entity.views?.map((m) => (
@@ -82,7 +85,7 @@ export const EditCardDrawer: FunctionComponent<IEditCardDrawerProps> = (
             {
               title: "逻辑",
               dataIndex: "actions",
-              render(dom, entity, index, action, schema) {
+              render(_, entity) {
                 return (
                   <div>
                     {entity.actions?.map((m) => (
@@ -113,6 +116,11 @@ export const EditCardDrawer: FunctionComponent<IEditCardDrawerProps> = (
         value={data}
         columns={columns}
         size="middle"
+        editable={{
+          type: "single",
+          editableKeys,
+          onChange: setEditableRowKeys
+        }}
         expandable={{
           expandedRowRender
         }}
