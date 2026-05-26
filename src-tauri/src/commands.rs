@@ -7,7 +7,7 @@
 use crate::constants::BUSINESS_ERROR_CODE;
 use crate::scanner::SceneMetaData;
 use crate::util::init;
-use crate::{useconfig, AppState};
+use crate::{atomics, useconfig, AppState};
 
 #[derive(serde::Serialize)] // 必须实现 Serialize，Tauri 才能把它转成 JSON
 pub struct MyError {
@@ -73,4 +73,10 @@ pub async fn check_project(path: String) -> Result<(), MyError> {
 #[tauri::command]
 pub async fn get_config(state: tauri::State<'_, AppState>) -> Result<Option<String>, String> {
     useconfig::get_config(state)
+}
+
+#[tauri::command]
+pub async fn get_atomics() -> Result<Vec<String>, MyError> {
+    atomics::get_atomics();
+    Ok(vec!["Atomic1".to_string(), "Atomic2".to_string()])
 }

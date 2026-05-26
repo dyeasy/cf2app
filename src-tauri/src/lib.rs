@@ -12,6 +12,7 @@ pub mod util {
     pub mod scanner;
     pub mod useconfig;
     pub mod git;
+    pub mod atomics;
 }
 
 // use std::collections::HashMap;
@@ -27,6 +28,7 @@ pub use util::init;
 pub use util::scanner;
 pub use util::useconfig;
 pub use util::git;
+pub use util::atomics;
 
 use crate::constants::{STORE_CONFIG_NAME, STORE_KEY_PATH};
 
@@ -39,7 +41,8 @@ fn get_handler() -> impl Fn(Invoke) -> bool {
         commands::get_all_scenes,
         commands::save_config,
         commands::check_project,
-        commands::get_config
+        commands::get_config,
+        commands::get_atomics
     ]
 }
 
