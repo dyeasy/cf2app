@@ -31,6 +31,6 @@ git2 = "0.21.0"
 swc_common = "22.0.0"
 swc_ecma_parser = "40.0.0"
 swc_ecma_ast = "24.0.0"
-swc_ecma_visit = "24.0.0"
 swc_ecma_codegen = "27.0.0"
+swc_ecma_visit = "24.0.0"
 

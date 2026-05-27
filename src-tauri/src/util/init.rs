@@ -4,13 +4,14 @@
  * @Company: orientsec.com.cn
  * @Description:
  */
+use crate::mystruct::{FileTarget, SceneConfig, SceneMetaData};
 use crate::{constants::TARGET_SCENE_DIR, git::get_git_data, scanner};
-use std::{collections::HashMap, path::Path};
 use chrono::{DateTime, Local};
+use std::{collections::HashMap, path::Path};
 
 pub fn run_init_logic(
     path: &str,
-) -> Result<HashMap<String, scanner::SceneMetaData>, Box<dyn std::error::Error>> {
+) -> Result<HashMap<String, SceneMetaData>, Box<dyn std::error::Error>> {
     // let target_scene_dir_name = "fastman2-business-scenes";
     // let base_path = "/Users/jiangxin/dfzq/dfyj-h5-v2/packages";
     let base_path = path;
@@ -30,7 +31,7 @@ pub fn run_init_logic(
 
     let matcher_scene_config = scanner::create_global_matcher(&["**/scene.json"])?;
 
-    let mut all_scene: HashMap<String, scanner::SceneMetaData> = HashMap::new();
+    let mut all_scene: HashMap<String, SceneMetaData> = HashMap::new();
 
     let iter = scanner::get_target_files(&target_dir_path);
 
@@ -58,19 +59,18 @@ pub fn run_init_logic(
                         datetime.format("%Y-%m-%d %H:%M:%S").to_string()
                     });
 
-                let metadata =
-                    all_scene
-                        .entry(scene_id.to_string())
-                        .or_insert(scanner::SceneMetaData {
-                            key: scene_id.to_string(),
-                            actions: Vec::new(),
-                            views: Vec::new(),
-                            modified_time: folder_time,
-                            scene_config: scanner::SceneConfig {
-                                title: String::new(),
-                                ..Default::default()
-                            },
-                        });
+                let metadata = all_scene
+                    .entry(scene_id.to_string())
+                    .or_insert(SceneMetaData {
+                        key: scene_id.to_string(),
+                        actions: Vec::new(),
+                        views: Vec::new(),
+                        modified_time: folder_time,
+                        scene_config: SceneConfig {
+                            title: String::new(),
+                            ..Default::default()
+                        },
+                    });
                 let target = scanner::file_target_type(
                     path,
                     &base_path,
@@ -79,7 +79,7 @@ pub fn run_init_logic(
                 );
 
                 match target {
-                    scanner::FileTarget::Router {
+                    FileTarget::Router {
                         display_path,
                         is_action,
                         is_view,
@@ -90,11 +90,11 @@ pub fn run_init_logic(
                             metadata.views.push(display_path);
                         }
                     }
-                    scanner::FileTarget::Config(config) => {
+                    FileTarget::Config(config) => {
                         metadata.scene_config = config;
                         // println!("✅ 成功加载配置: {:?}", metadata.scene_config.title);
                     }
-                    scanner::FileTarget::Ignore => {}
+                    FileTarget::Ignore => {}
                 }
             }
             Err(e) => println!("Error: {:?}", e),

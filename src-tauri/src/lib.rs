@@ -7,6 +7,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 pub mod commands;
 pub mod constants;
+pub mod mystruct;
 pub mod util {
     pub mod init;
     pub mod scanner;
@@ -14,9 +15,6 @@ pub mod util {
     pub mod git;
     pub mod atomics;
 }
-
-// use std::collections::HashMap;
-// use std::sync::Mutex;
 
 use std::sync::Mutex;
 
@@ -47,11 +45,6 @@ fn get_handler() -> impl Fn(Invoke) -> bool {
 }
 
 fn load_initial_config(handle: &AppHandle) -> Option<String> {
-    // let store = handle.get_store(STORE_CONFIG_NAME)?;
-    // store
-    //     .get(STORE_KEY_PATH)
-    //     .and_then(|v| v.as_str().map(|s| s.to_string()))
-
     let store = StoreBuilder::new(handle, STORE_CONFIG_NAME)
         .build()
         .ok()?;

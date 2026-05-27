@@ -5,15 +5,9 @@
  * @Description:
  */
 use crate::constants::BUSINESS_ERROR_CODE;
-use crate::scanner::SceneMetaData;
+use crate::mystruct::{MyError, SceneEntry};
 use crate::util::init;
 use crate::{atomics, useconfig, AppState};
-
-#[derive(serde::Serialize)] // 必须实现 Serialize，Tauri 才能把它转成 JSON
-pub struct MyError {
-    pub code: i32,
-    pub message: String,
-}
 
 impl MyError {
     fn new(code: i32, message: impl Into<String>) -> Self {
@@ -22,13 +16,6 @@ impl MyError {
             message: message.into(),
         }
     }
-}
-
-#[derive(serde::Serialize)]
-pub struct SceneEntry {
-    pub key: String,
-    #[serde(flatten)] // 这会让 SceneMetaData 的字段直接平铺到这个对象里
-    pub data: SceneMetaData,
 }
 
 #[tauri::command]

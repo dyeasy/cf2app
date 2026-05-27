@@ -27,6 +27,7 @@ export const EditCardDrawer: FunctionComponent<IEditCardDrawerProps> = (
 ) => {
   const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([]);
   const { drawerProps, data } = props;
+  console.log("datadata", data);
   const columns: ProColumns<ICardItemType>[] = [
     {
       title: "场景名称",
@@ -34,10 +35,12 @@ export const EditCardDrawer: FunctionComponent<IEditCardDrawerProps> = (
     },
     {
       title: "onPageInit",
+      dataIndex: "onPageInit",
       valueType: "select"
     },
     {
       title: "onClick",
+      dataIndex: "onClick",
       valueType: "select"
     },
     {

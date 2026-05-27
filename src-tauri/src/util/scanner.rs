@@ -4,52 +4,11 @@
  * @Company: orientsec.com.cn
  * @Description:
  */
-
-use chrono::{DateTime, Local};
 use globset::{Glob, GlobSet, GlobSetBuilder};
-use serde::{Deserialize, Serialize};
 use std::{error::Error, fs, path::Path};
-pub use walkdir::WalkDir; // 如果外面也要用 WalkDir，可以 pub use
+pub use walkdir::WalkDir;
 
-// 必须 pub 才能被外面看到
-#[derive(Serialize, Deserialize, Debug)]
-pub struct SceneMetaData {
-    pub key: String,
-    pub actions: Vec<String>,
-    pub views: Vec<String>,
-    #[serde(rename = "modifiedTime")]
-    pub modified_time: Option<String>,
-    // #[serde(rename = "gitData")]
-    // pub git_data: GitData,
-    #[serde(rename = "sceneData")]
-    pub scene_config: SceneConfig,
-}
-
-#[derive(Serialize, Deserialize, Debug, Default)]
-pub struct GitData {
-    pub modified_time: String,      // 最后提交时间（格式化后的文本）
-    pub last_commit_author: String, // 最新修改人姓名
-    pub author_email: String,       // 最新修改人邮箱
-}
-
-#[derive(Serialize, Deserialize, Debug, Default)]
-pub struct SceneConfig {
-    pub title: String,
-    #[serde(default)]
-    pub description: String,
-    #[serde(default)]
-    pub disabled: bool,
-}
-
-pub enum FileTarget {
-    Router {
-        display_path: String,
-        is_action: bool,
-        is_view: bool,
-    },
-    Config(SceneConfig),
-    Ignore,
-}
+use crate::mystruct::{FileTarget, SceneConfig}; // 如果外面也要用 WalkDir，可以 pub use
 
 pub fn create_global_matcher(patterns: &[&str]) -> Result<GlobSet, Box<dyn Error>> {
     let mut builder = GlobSetBuilder::new();
