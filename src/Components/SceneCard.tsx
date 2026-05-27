@@ -15,22 +15,22 @@ import {
   FloatButton,
   Space,
   Avatar,
-  Drawer
+  Drawer,
+  notification
 } from "antd";
 import { ICardItemType } from "../typing";
 import { AppstoreTwoTone, ClearOutlined } from "@ant-design/icons";
 import { EditCardDrawer } from "./EditCard";
 import style from "./scenecard.module.scss";
+import { invoke } from "@tauri-apps/api/core";
 interface ISceneCardProps {
-  data?: ICardItemType[];
+  //   data?: ICardItemType[];
 }
 
 export function SceneCard(props: ISceneCardProps) {
   const [selectCard, setSelectCard] = useState<ICardItemType[]>();
   const [open, setOpen] = useState(false);
-  const { data: dataSource = [] } = props;
-
-  console.log('dataSourcedataSource',dataSource)
+  //   const { data: dataSource = [] } = props;
 
   const columns: ProColumns<ICardItemType>[] = [
     {
@@ -70,14 +70,30 @@ export function SceneCard(props: ISceneCardProps) {
         rowSelection={{
           selectedRowKeys: selectCard?.map((m) => m.key),
           onChange(selectedRowKeys, selectedRows, info) {
-            console.log("fdsafdsa", selectedRowKeys);
             setSelectCard(selectedRows);
           }
         }}
         grid={{ gutter: 12, column: 3 }}
         columns={columns}
         headerTitle="场景"
-        dataSource={dataSource}
+        request={async () => {
+          try {
+            const data = await invoke<ICardItemType[]>("get_all_scenes");
+            return {
+              data,
+              success: true
+            };
+          } catch (error) {
+            if (!!error && typeof error === "object" && "message" in error) {
+              notification.error({
+                message: "Error",
+                description: error.message as string
+              });
+            }
+            throw error;
+          }
+        }}
+        // dataSource={dataSource}
         tableAlertRender={false}
         className={style.scenecard}
         search={{

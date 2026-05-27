@@ -11,11 +11,12 @@ import {
   EditableProTable,
   ProDescriptions
 } from "@ant-design/pro-components";
-import { FunctionComponent, useState } from "react";
+import { FunctionComponent, useEffect, useState } from "react";
 import { ICardItemType } from "@/typing";
 import { AppstoreTwoTone } from "@ant-design/icons";
 import { ExpandableConfig } from "antd/es/table/interface";
 import { getViewName } from "../util";
+import { invoke } from "@tauri-apps/api/core";
 
 interface IEditCardDrawerProps {
   drawerProps: DrawerProps;
@@ -27,21 +28,56 @@ export const EditCardDrawer: FunctionComponent<IEditCardDrawerProps> = (
 ) => {
   const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([]);
   const { drawerProps, data } = props;
-  console.log("datadata", data);
+
+  async function getAtomicsData() {
+    try {
+      const data = await invoke("get_atomics");
+    } catch (error) {}
+  }
+
+  useEffect(() => {
+    if (!!drawerProps.open) {
+      getAtomicsData();
+    }
+  }, [drawerProps.open]);
+
   const columns: ProColumns<ICardItemType>[] = [
     {
       title: "场景名称",
-      dataIndex: ["sceneData", "title"]
+      dataIndex: ["sceneData", "title"],
+      editable: false,
+      width: 100,
+      ellipsis: true,
+      fixed: "left"
     },
     {
       title: "onPageInit",
       dataIndex: "onPageInit",
-      valueType: "select"
+      valueType: "select",
+      fieldProps: {
+        mode: "multiple", // 关键：设置为多选
+        allowClear: true, // 可选：允许清空
+        maxTagCount: 2 //
+      },
+      request() {
+        return Promise.resolve([
+          {
+            label: "fdf",
+            value: "d"
+          },
+          {
+            label: "aaa",
+            value: "dddd"
+          }
+        ]);
+      }
+      //   width: 200
     },
     {
       title: "onClick",
       dataIndex: "onClick",
-      valueType: "select"
+      valueType: "select",
+      width: 200
     },
     {
       title: "操作",
@@ -105,7 +141,7 @@ export const EditCardDrawer: FunctionComponent<IEditCardDrawerProps> = (
   return (
     <Drawer
       title="创建"
-      size="65%"
+      size="82%"
       footer={
         <Space>
           <Button>取消</Button>
