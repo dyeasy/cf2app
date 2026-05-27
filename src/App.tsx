@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import { SetProjectTarget } from "./Components/SetProjectTarget";
-import {SceneCard} from "./Components/SceneCard";
+import { SceneCard } from "./Components/SceneCard";
 import {
   Button,
   Descriptions,
@@ -39,6 +39,11 @@ function App() {
 
       setProjectPath(path);
       if (!!path) {
+        await invoke("get_atomics")
+          .then((res) => console.log("sssss----", res))
+          .catch((error) => {
+            throw error;
+          });
         await invoke("get_all_scenes")
           .then((res) => {
             const _res = res as ICardItemType[] | undefined;
@@ -54,6 +59,8 @@ function App() {
           });
       }
     } catch (error) {
+      console.log(error);
+
       if (!!error && typeof error === "object" && "message" in error) {
         notification.error({
           message: "Error",

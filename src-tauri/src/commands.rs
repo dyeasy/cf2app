@@ -4,10 +4,12 @@
  * @Company: orientsec.com.cn
  * @Description:
  */
-use crate::constants::BUSINESS_ERROR_CODE;
-use crate::mystruct::{MyError, SceneEntry};
+use crate::constants::{BUSINESS_ERROR_CODE, TARGET_ATOMICS_DIR};
+use crate::mystruct::{ExportItem, MyError, SceneEntry};
 use crate::util::init;
 use crate::{atomics, useconfig, AppState};
+use std::fs;
+use std::path::Path;
 
 impl MyError {
     fn new(code: i32, message: impl Into<String>) -> Self {
@@ -63,7 +65,20 @@ pub async fn get_config(state: tauri::State<'_, AppState>) -> Result<Option<Stri
 }
 
 #[tauri::command]
-pub async fn get_atomics() -> Result<Vec<String>, MyError> {
-    atomics::get_atomics();
-    Ok(vec!["Atomic1".to_string(), "Atomic2".to_string()])
+pub async fn get_atomics(state: tauri::State<'_, AppState>) -> Result<Vec<ExportItem>, MyError> {
+    let Some(path) = state.project_path.lock().unwrap().clone() else {
+        return Err(MyError::new(BUSINESS_ERROR_CODE, "尚未选择项目路径"));
+    };
+
+    let target_dir_path = Path::new(&path)
+        .join(TARGET_ATOMICS_DIR)
+        .join("src/index.ts");
+
+   fs::read_to_string(&target_dir_path)
+    // 1. 先把读取文件的错误转成 MyError
+    .map_err(|_| MyError::new(BUSINESS_ERROR_CODE, format!("无法读取文件: {}", target_dir_path.to_string_lossy())))
+    // 2. 成功后，打印内容并顺流进入下一个处理函数
+    .and_then(|content| {
+        atomics::get_atomics(&content).map_err(|msg| MyError::new(BUSINESS_ERROR_CODE, msg))
+    })
 }

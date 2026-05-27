@@ -4,33 +4,46 @@
  * @Company: orientsec.com.cn
  * @Description:
  */
-use std::{fs, rc::Rc};
-use swc_common::{sync::Lrc, SourceMap};
-use swc_ecma_ast::*;
-use swc_ecma_visit::{Visit, VisitWith};
+use swc_common::{sync::Lrc, FilePathMapping, Globals, SourceMap, GLOBALS};
+use swc_ecma_parser::{Lexer, Parser, Syntax, TsSyntax};
+use swc_ecma_visit::VisitWith;
 
-use crate::mystruct::AtomicsExportInfo;
+use crate::mystruct::{AtomicsExportInfo, ExportItem};
 
-// use crate::commands::AtomicsExportInfo;
+pub fn get_atomics(code: &str) -> Result<Vec<ExportItem>, String> {
+    let globals = Globals::new();
 
-#[derive(Default)]
-pub struct ExportExtractor {
-    pub results: Vec<AtomicsExportInfo>,
-}
+    GLOBALS.set(&globals, || {
+        let cm: Lrc<SourceMap> = Lrc::new(SourceMap::new(FilePathMapping::empty()));
+        let fm = cm.new_source_file(
+            swc_common::FileName::Custom("index.ts".into()).into(),
+            code.to_string(),
+        );
 
-impl Visit for ExportExtractor {
-    // fn visit_export_na
-    // fn visit_export_named_declaration(&mut self, node: &ExportNamedSpecifier) {
-    //     if let (Some(ModuleExportName::Ident(exported_ident)), Some(src)) = (&node.exported, &node.src) {
-    //         // self.exports.push(ExportItem {
-    //         //     name: exported_ident.sym.to_string(),
-    //         //     source: src.value.to_string(),
-    //         // });
-    //     }
-    // }
-}
+        let lexer = Lexer::new(
+            Syntax::Typescript(TsSyntax {
+                tsx: false,
+                ..Default::default()
+            }),
+            Default::default(),
+            (&*fm).into(), // 🎯 关键：让输入流带上正确的 SourceMap 坐标范围
+            None,
+        );
 
-pub fn get_atomics() -> Vec<AtomicsExportInfo> {
-    let cm: Lrc<SourceMap> = Default::default();
-    Vec::new()
+        let mut parser = Parser::new_from(lexer);
+
+        // 6. 解析 Module
+        let module = match parser.parse_module() {
+            Ok(m) => m,
+            Err(e) => {
+                return Err(format!("解析 TS 文件失败: {:?}", e));
+            }
+        };
+
+        // 7. 顺理成章地执行遍历
+        let mut visitor = AtomicsExportInfo { result: vec![] };
+        module.visit_with(&mut visitor);
+
+        Ok(visitor.result)
+    })
 }

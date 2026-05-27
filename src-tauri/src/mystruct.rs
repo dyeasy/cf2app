@@ -58,8 +58,13 @@ pub struct SceneEntry {
     pub data: SceneMetaData,
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, Debug)]
+pub struct ExportItem {
+    pub name: String,      // 中文名称，例如 "业务办理配置获取"
+    pub source: String,    // 路径，例如 "./configQueryLogic"
+}
+
+#[derive(serde::Serialize, Debug)]
 pub struct AtomicsExportInfo {
-    pub name: String,
-    pub source: String,
+    pub result: Vec<ExportItem>,         // 存放所有提取出的导出项
 }

@@ -14,6 +14,7 @@ pub mod util {
     pub mod useconfig;
     pub mod git;
     pub mod atomics;
+    pub mod visit;
 }
 
 use std::sync::Mutex;
