@@ -4,7 +4,7 @@
  * @Company: orientsec.com.cn
  * @Description:
  */
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ProList } from "@ant-design/pro-components";
 import type { ProColumns } from "@ant-design/pro-components";
 import {
@@ -20,17 +20,14 @@ import {
 } from "antd";
 import { ICardItemType } from "../typing";
 import { AppstoreTwoTone, ClearOutlined } from "@ant-design/icons";
-import { EditCardDrawer } from "./EditCard";
+import { EditCardDrawer, IEditCardDrawerRef } from "./EditCard";
 import style from "./scenecard.module.scss";
 import { invoke } from "@tauri-apps/api/core";
-interface ISceneCardProps {
-  //   data?: ICardItemType[];
-}
+interface ISceneCardProps {}
 
 export function SceneCard(props: ISceneCardProps) {
   const [selectCard, setSelectCard] = useState<ICardItemType[]>();
-  const [open, setOpen] = useState(false);
-  //   const { data: dataSource = [] } = props;
+  const editCardDrawerInstance = useRef<IEditCardDrawerRef>(null);
 
   const columns: ProColumns<ICardItemType>[] = [
     {
@@ -109,18 +106,14 @@ export function SceneCard(props: ISceneCardProps) {
         />
         <FloatButton
           badge={{ count: selectCard?.length, overflowCount: 999 }}
-          onClick={!!selectCard?.length ? () => setOpen(true) : void 0}
+          onClick={
+            !!selectCard?.length
+              ? () => editCardDrawerInstance.current?.open?.(selectCard)
+              : void 0
+          }
         />
       </FloatButton.Group>
-      <EditCardDrawer
-        data={selectCard}
-        drawerProps={{
-          open,
-          onClose() {
-            setOpen(false);
-          }
-        }}
-      />
+      <EditCardDrawer ref={editCardDrawerInstance} />
     </>
   );
 }

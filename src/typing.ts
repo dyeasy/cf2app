@@ -6,13 +6,19 @@
  */
 export interface ICardItemType {
   key: string;
-  actions: string[];
-  views: string[];
-  modifiedTime: string;
-  sceneData: {
+  actions?: string[];
+  views?: string[];
+  modifiedTime?: string;
+  sceneData?: {
     title: string;
     description?: string;
     disabled?: boolean;
   };
+}
+
+export interface IAtomicItemType {
+  key: string;
+  name: string;
+  description?: string;
 }
 

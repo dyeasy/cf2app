@@ -21,14 +21,11 @@ impl Visit for AtomicsExportInfo {
             };
 
             if let Some(ModuleExportName::Ident(exported_ident)) = &named.exported {
-                print!(
-                    "Exported name: {}, Source: {}",
-                    exported_ident.sym,
-                    src.value.to_string_lossy()
-                );
+                let exported_name = exported_ident.sym.to_string();
                 self.result.push(ExportItem {
-                    name: exported_ident.sym.to_string(),
-                    source: src.value.to_string_lossy().into_owned()
+                    key: exported_name.clone(),
+                    name: exported_name.clone(),
+                    source: src.value.to_string_lossy().into_owned(),
                 });
             }
         }
