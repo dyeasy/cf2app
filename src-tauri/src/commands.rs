@@ -87,13 +87,13 @@ pub async fn get_atomics(state: tauri::State<'_, AppState>) -> Result<Vec<Export
             atomics::get_atomics(&content).map_err(|msg| MyError::new(BUSINESS_ERROR_CODE, msg))
         })
 }
-
+#[tauri::command]
 pub async fn get_scene_eventflow(scene_id: String) -> Result<(), MyError> {
     println!("获取场景 {} 的事件流", scene_id);
     scene::get_scene_eventflow(&scene_id);
     Ok(())
 }
-
+#[tauri::command]
 pub async fn get_scene_forwarding(scene_id: String) -> Result<(), MyError> {
     println!("获取场景 {} 的转发配置", scene_id);
     scene::get_scene_forwarding(&scene_id);

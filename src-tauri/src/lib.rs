@@ -9,13 +9,13 @@ pub mod commands;
 pub mod constants;
 pub mod mystruct;
 pub mod util {
+    pub mod atomics;
+    pub mod git;
     pub mod init;
     pub mod scanner;
-    pub mod useconfig;
-    pub mod git;
-    pub mod atomics;
-    pub mod visit;
     pub mod scene;
+    pub mod useconfig;
+    pub mod visit;
 }
 
 use std::sync::Mutex;
@@ -24,12 +24,12 @@ use tauri::ipc::Invoke;
 use tauri::AppHandle;
 use tauri::Manager;
 use tauri_plugin_store::StoreBuilder;
+pub use util::atomics;
+pub use util::git;
 pub use util::init;
 pub use util::scanner;
-pub use util::useconfig;
-pub use util::git;
-pub use util::atomics;
 pub use util::scene;
+pub use util::useconfig;
 
 use crate::constants::{STORE_CONFIG_NAME, STORE_KEY_PATH};
 
@@ -50,12 +50,11 @@ fn get_handler() -> impl Fn(Invoke) -> bool {
 }
 
 fn load_initial_config(handle: &AppHandle) -> Option<String> {
-    let store = StoreBuilder::new(handle, STORE_CONFIG_NAME)
-        .build()
-        .ok()?;
+    let store = StoreBuilder::new(handle, STORE_CONFIG_NAME).build().ok()?;
 
     // 2. 读取值并转换
-    store.get(STORE_KEY_PATH)
+    store
+        .get(STORE_KEY_PATH)
         .and_then(|v| v.as_str().map(|s| s.to_string()))
 }
 

@@ -102,9 +102,16 @@ export const EditCardDrawer = forwardRef<
     } catch (error) {}
   }
 
+  async function getEventFlow() {
+    try {
+      await invoke("get_scene_eventflow", { sceneId: "fdfdfd" });
+    } catch (error) {}
+  }
+
   useEffect(() => {
     if (show) {
       getAtomicsData();
+      getEventFlow();
     }
   }, [show]);
 
