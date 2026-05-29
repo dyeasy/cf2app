@@ -89,7 +89,6 @@ pub async fn get_atomics(state: tauri::State<'_, AppState>) -> Result<Vec<Export
 }
 #[tauri::command]
 pub async fn get_scene_eventflow(scene_id: String) -> Result<(), MyError> {
-    println!("获取场景 {} 的事件流", scene_id);
     scene::get_scene_eventflow(&scene_id);
     Ok(())
 }

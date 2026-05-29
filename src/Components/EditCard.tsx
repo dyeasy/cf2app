@@ -162,19 +162,20 @@ export const EditCardDrawer = forwardRef<
     {
       title: "onClick",
       dataIndex: "onClick",
-      valueType: "select",
+      valueType: "treeSelect",
       fieldProps: {
         mode: "tags", // 关键：设置为多选
         allowClear: true, // 可选：允许清空
         maxTagCount: 4, //
-        maxTagPlaceholder: (omittedValues) => (
-          <Tooltip
-            styles={{ root: { pointerEvents: "none" } }}
-            title={omittedValues.map(({ label }) => label).join(", ")}
-          >
-            <span>+ {omittedValues.length}...</span>
-          </Tooltip>
-        )
+        treeCheckable: true
+        // maxTagPlaceholder: (omittedValues) => (
+        //   <Tooltip
+        //     styles={{ root: { pointerEvents: "none" } }}
+        //     title={omittedValues.map(({ label }) => label).join(", ")}
+        //   >
+        //     <span>+ {omittedValues.length}...</span>
+        //   </Tooltip>
+        // )
       },
       valueEnum: atomicOptions,
       width: 280
