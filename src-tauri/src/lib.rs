@@ -15,6 +15,7 @@ pub mod util {
     pub mod git;
     pub mod atomics;
     pub mod visit;
+    pub mod scene;
 }
 
 use std::sync::Mutex;
@@ -28,6 +29,7 @@ pub use util::scanner;
 pub use util::useconfig;
 pub use util::git;
 pub use util::atomics;
+pub use util::scene;
 
 use crate::constants::{STORE_CONFIG_NAME, STORE_KEY_PATH};
 
@@ -41,7 +43,9 @@ fn get_handler() -> impl Fn(Invoke) -> bool {
         commands::save_config,
         commands::check_project,
         commands::get_config,
-        commands::get_atomics
+        commands::get_atomics,
+        commands::get_scene_eventflow,
+        commands::get_scene_forwarding
     ]
 }
 
