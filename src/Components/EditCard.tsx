@@ -177,7 +177,22 @@ export const EditCardDrawer = forwardRef<
         //   </Tooltip>
         // )
       },
-      valueEnum: atomicOptions,
+      //   valueEnum: atomicOptions,
+      params: { name: "aaa" },
+      async request(_, props) {
+        console.log("arrrrrr", props);
+        try {
+          console.log("fdsafsad");
+          return Promise.resolve([
+            {
+              label: "ddd",
+              value: 121
+            }
+          ]);
+        } catch (error) {
+          throw error;
+        }
+      },
       width: 280
     },
     {
