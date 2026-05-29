@@ -10,7 +10,7 @@ use serde_json::{json, Value};
 use std::fs;
 use std::path::PathBuf;
 use tauri::AppHandle;
-use tauri_plugin_store::{StoreBuilder, StoreExt};
+use tauri_plugin_store::StoreBuilder;
 
 pub fn save_config(
     path: String,
@@ -30,7 +30,7 @@ pub fn save_config(
 
     let mut lock = state.project_path.lock().map_err(|_| "获取锁失败")?;
     *lock = Some(path);
-    
+
     Ok(())
 }
 

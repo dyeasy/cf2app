@@ -5,7 +5,7 @@
  * @Description:
  */
 use crate::mystruct::{FileTarget, SceneConfig, SceneMetaData};
-use crate::{constants::TARGET_SCENE_DIR, git::get_git_data, scanner};
+use crate::{constants::TARGET_SCENE_DIR, scanner};
 use chrono::{DateTime, Local};
 use std::{collections::HashMap, path::Path};
 
