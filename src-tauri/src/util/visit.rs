@@ -5,10 +5,10 @@
  * @Description:
  */
 
-use swc_ecma_ast::{ExportSpecifier, ModuleExportName, NamedExport};
+use swc_ecma_ast::{ExportSpecifier, ModuleExportName, NamedExport, VarDeclarator};
 use swc_ecma_visit::Visit;
 
-use crate::mystruct::{AtomicsExportInfo, ExportItem};
+use crate::mystruct::{AtomicsExportInfo, EventFlow, ExportItem};
 
 impl Visit for AtomicsExportInfo {
     fn visit_named_export(&mut self, node: &NamedExport) {
@@ -29,5 +29,10 @@ impl Visit for AtomicsExportInfo {
                 });
             }
         }
+    }
+}
+
+impl Visit for EventFlow {
+    fn visit_var_declarator(&mut self, node: &VarDeclarator) {
     }
 }

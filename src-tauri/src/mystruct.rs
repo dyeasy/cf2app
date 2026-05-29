@@ -69,3 +69,7 @@ pub struct ExportItem {
 pub struct AtomicsExportInfo {
     pub result: Vec<ExportItem>, // 存放所有提取出的导出项
 }
+#[derive(serde::Serialize, Debug)]
+pub struct EventFlow {
+    pub result: Vec<String>,
+}
