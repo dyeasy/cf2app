@@ -12,8 +12,6 @@ use std::{collections::HashMap, path::Path};
 pub fn run_init_logic(
     path: &str,
 ) -> Result<HashMap<String, SceneMetaData>, Box<dyn std::error::Error>> {
-    // let target_scene_dir_name = "fastman2-business-scenes";
-    // let base_path = "/Users/jiangxin/dfzq/dfyj-h5-v2/packages";
     let base_path = path;
 
     let target_dir_path = Path::new(base_path).join(TARGET_SCENE_DIR);
