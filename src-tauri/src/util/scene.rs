@@ -9,7 +9,11 @@ use anyhow::Result;
 use std::path::Path;
 use swc_common::GLOBALS;
 
-use crate::{constants::TARGET_SCENE_DIR, scanner::create_global_matcher, AppState};
+use crate::{
+    constants::TARGET_SCENE_DIR,
+    scanner::{self, create_global_matcher},
+    AppState,
+};
 
 pub fn get_scene_eventflow(scene_id: &str, state: tauri::State<'_, AppState>) -> Result<()> {
     let path = state
@@ -19,8 +23,7 @@ pub fn get_scene_eventflow(scene_id: &str, state: tauri::State<'_, AppState>) ->
         .clone()
         .ok_or_else(|| anyhow::anyhow!("项目路径未设置"))?;
 
-    let target_dir_path = Path::new(&path).join(TARGET_SCENE_DIR);
-    println!("目标目录路径: {:?}", target_dir_path);
+    let target_dir_path = Path::new(&path).join(TARGET_SCENE_DIR).join(scene_id);
     let matcher_router = create_global_matcher(&[
         "**/actions/*.ts",
         "**/actions.ts",
@@ -28,6 +31,25 @@ pub fn get_scene_eventflow(scene_id: &str, state: tauri::State<'_, AppState>) ->
         "**/views.tsx",
     ])
     .map_err(|e| anyhow::anyhow!("获取锁失败: {}", e))?;
+
+    let iter = scanner::get_target_files_from_scene(&target_dir_path, &matcher_router);
+
+    for entry in iter {
+        match entry {
+            Ok(entry) => {
+                let path = entry.path();
+                let extension_str = path.extension().and_then(|ext| ext.to_str());
+                match extension_str {
+                    Some("ts") => println!("这是一个 TypeScript 文件"),
+                    Some("tsx") => println!("这是一个 TSX 文件"),
+                    _ => println!("未知文件类型"),
+                }
+            }
+            Err(e) => {
+                println!("遍历文件时出错: {}", e);
+            }
+        }
+    }
     Ok(())
 }
 

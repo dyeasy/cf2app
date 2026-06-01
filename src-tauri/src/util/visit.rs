@@ -34,5 +34,6 @@ impl Visit for AtomicsExportInfo {
 
 impl Visit for EventFlow {
     fn visit_var_declarator(&mut self, node: &VarDeclarator) {
+        println!("访问变量声明: {:?}", node.name);
     }
 }

@@ -88,12 +88,18 @@ pub async fn get_atomics(state: tauri::State<'_, AppState>) -> Result<Vec<Export
         })
 }
 #[tauri::command]
-pub async fn get_scene_eventflow(scene_id: String,state: tauri::State<'_, AppState>) -> Result<(), MyError> {
+pub async fn get_scene_eventflow(
+    scene_id: String,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), MyError> {
     scene::get_scene_eventflow(&scene_id, state);
     Ok(())
 }
 #[tauri::command]
-pub async fn get_scene_forwarding(scene_id: String,state: tauri::State<'_, AppState>) -> Result<(), MyError> {
+pub async fn get_scene_forwarding(
+    scene_id: String,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), MyError> {
     println!("获取场景 {} 的转发配置", scene_id);
     scene::get_scene_forwarding(&scene_id, state);
     Ok(())

@@ -93,6 +93,8 @@ export const EditCardDrawer = forwardRef<
   const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([]);
   const [atomic, setAtomic] = useState<IAtomicItemType[]>();
   const [dataSource, setDataSource] = useState<ICardItemType[] | undefined>();
+  const { eventFlowParams, setEventFlowParams } =
+    useState<Record<string, any>>();
 
   async function getAtomicsData() {
     try {
@@ -104,7 +106,7 @@ export const EditCardDrawer = forwardRef<
 
   async function getEventFlow() {
     try {
-      await invoke("get_scene_eventflow", { sceneId: "fdfdfd" });
+      await invoke("get_scene_eventflow", { sceneId: "bodyRecognition" });
     } catch (error) {}
   }
 
@@ -178,19 +180,24 @@ export const EditCardDrawer = forwardRef<
         // )
       },
       //   valueEnum: atomicOptions,
-      params: { name: "aaa" },
-      async request(_, props) {
-        console.log("arrrrrr", props);
+      //   params: { name: "aaa" },
+      request: async (_, record) => {
+        // 关键：只在当前行处于编辑状态时才请求
+        if (!editableKeys.includes(record.key as React.Key)) {
+          return [];
+        }
+
+        console.log(`正在请求 onClick 数据 - 行 ${record.key}`);
+
         try {
-          console.log("fdsafsad");
-          return Promise.resolve([
-            {
-              label: "ddd",
-              value: 121
-            }
-          ]);
+          //   const data = await invoke<IAtomicItemType[]>("get_atomics");
+          return [1, 2, 3].map((item) => ({
+            label: "212121",
+            value: "dddd"
+          }));
         } catch (error) {
-          throw error;
+          console.error("请求失败", error);
+          return [];
         }
       },
       width: 280
@@ -242,8 +249,9 @@ export const EditCardDrawer = forwardRef<
           type: "single",
           editableKeys,
           onChange: (key) => {
+            console.log('fsafdsa',key)
             setEditableRowKeys(key);
-          }
+          },
         }}
         expandable={{
           expandedRowRender

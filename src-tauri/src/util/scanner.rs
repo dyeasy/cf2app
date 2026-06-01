@@ -39,6 +39,50 @@ pub fn get_target_files<P: AsRef<Path>>(
         })
 }
 
+pub fn get_target_files_from_scene<'a, P: AsRef<Path>>(
+    url: P,
+    matcher: &'a GlobSet,
+) -> impl Iterator<Item = walkdir::Result<walkdir::DirEntry>> + 'a {
+    const EXCLUDE_DIRS: [&str; 6] = [
+        "node_modules",
+        "dist",
+        ".git",
+        "__tests__",
+        "component",
+        "assets",
+    ];
+    let root_path = url.as_ref().to_path_buf();
+    WalkDir::new(url)
+        .min_depth(1)
+        .max_depth(4)
+        .into_iter()
+        .filter_entry(move |f| {
+            let file_name = f.file_name().to_string_lossy();
+            if f.file_type().is_dir() {
+                // 如果在黑名单里，直接剪枝（不进去）
+                if EXCLUDE_DIRS.contains(&file_name.as_ref()) {
+                    return false;
+                }
+            }
+            true // 其余的所有目录和文件都放行，让 WalkDir 正常往下走
+        })
+        .filter_map(|res| res.ok())
+        .filter(move |entry| {
+            // 如果是文件夹（比如 actions, views 本身），一律不要！
+            if entry.file_type().is_dir() {
+                return false;
+            }
+
+            // 如果是文件，计算相对路径丢给 Glob 匹配
+            if let Ok(rel_path) = entry.path().strip_prefix(&root_path) {
+                return matcher.is_match(rel_path);
+            }
+
+            false
+        })
+        .map(Ok) // 把剩下的都包装成 Ok，保持和 WalkDir 的输出类型一致
+}
+
 pub fn read_scene_config<P: AsRef<Path>>(path: P) -> Result<SceneConfig, Box<dyn Error>> {
     let content = fs::read_to_string(path)?;
     Ok(serde_json::from_str(&content)?)
