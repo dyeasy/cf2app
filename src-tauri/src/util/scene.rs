@@ -6,7 +6,7 @@
  */
 
 use anyhow::Result;
-use std::path::Path;
+use std::{fs, path::Path};
 use swc_common::GLOBALS;
 
 use crate::{
@@ -40,8 +40,16 @@ pub fn get_scene_eventflow(scene_id: &str, state: tauri::State<'_, AppState>) ->
                 let path = entry.path();
                 let extension_str = path.extension().and_then(|ext| ext.to_str());
                 match extension_str {
-                    Some("ts") => println!("这是一个 TypeScript 文件"),
-                    Some("tsx") => println!("这是一个 TSX 文件"),
+                    Some("ts") => {
+                        let code = fs::read_to_string(&path)
+                            .map_err(|e| anyhow::anyhow!("读取文件失败: {}", e))?;
+                        println!("这是一个 TypeScript 文件{}", code);
+                    }
+                    Some("tsx") => {
+                        let code = fs::read_to_string(&path)
+                            .map_err(|e| anyhow::anyhow!("读取文件失败: {}", e))?;
+                        println!("这是一个 TSX 文件{}", code);
+                    }
                     _ => println!("未知文件类型"),
                 }
             }
