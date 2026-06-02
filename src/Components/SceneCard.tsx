@@ -16,10 +16,20 @@ import {
   Space,
   Avatar,
   Drawer,
-  notification
+  notification,
+  Badge,
+  BorderBeam
 } from "antd";
 import { ICardItemType } from "../typing";
-import { AppstoreTwoTone, ClearOutlined } from "@ant-design/icons";
+import {
+  AppstoreTwoTone,
+  ClearOutlined,
+  EditOutlined,
+  EllipsisOutlined,
+  PlusOutlined,
+  SettingOutlined,
+  ShoppingCartOutlined
+} from "@ant-design/icons";
 import { EditCardDrawer, IEditCardDrawerRef } from "./EditCard";
 import style from "./scenecard.module.scss";
 import { invoke } from "@tauri-apps/api/core";
@@ -47,27 +57,55 @@ export function SceneCard(props: ISceneCardProps) {
     {
       title: "场景名称",
       dataIndex: ["sceneData", "title"],
-      listSlot: "title"
+      listSlot: "title",
     },
     {
       title: "操作",
+      valueType: "option",
       listSlot: "actions",
-      render: () => [
-        <a key="view" onClick={(e) => e.stopPropagation()}>
-          查看
-        </a>
+      render: (text, record, index) => [
+        <Button
+          type="link"
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectCard((v = []) => {
+              return [...v, record];
+            });
+          }}
+        >
+          添加
+        </Button>
       ]
     }
   ];
+
   return (
     <>
       <ProList<ICardItemType>
         rowKey="key"
         pagination={false}
-        rowSelection={{
-          selectedRowKeys: selectCard?.map((m) => m.key),
-          onChange(selectedRowKeys, selectedRows, info) {
-            setSelectCard(selectedRows);
+        toolbar={{
+          menu: {
+            //   activeKey,
+            items: [
+              {
+                key: "tab1",
+                label: (
+                  <span>
+                    全部场景
+                    <Badge count />
+                  </span>
+                )
+              }
+            ],
+            onChange(key) {
+              // setActiveKey(key);
+            }
+          },
+          search: {
+            onSearch: (value: string) => {
+              console.log("value", value);
+            }
           }
         }}
         grid={{ gutter: 12, column: 3 }}
@@ -93,25 +131,42 @@ export function SceneCard(props: ISceneCardProps) {
         // dataSource={dataSource}
         tableAlertRender={false}
         className={style.scenecard}
-        search={{
-          filterType: "query"
-        }}
+        search={false}
       />
-      <FloatButton.Group shape="circle" open={true} style={{ right: 10 }}>
+      <FloatButton.Group
+        className={style.groupbutton}
+        shape="circle"
+        open={true}
+        style={{ right: 10 }}
+      >
         <FloatButton
           icon={<ClearOutlined />}
           disabled={!selectCard?.length}
           tooltip="清空选中场景"
           onClick={() => setSelectCard([])}
         />
-        <FloatButton
-          badge={{ count: selectCard?.length, overflowCount: 999 }}
-          onClick={
-            !!selectCard?.length
-              ? () => editCardDrawerInstance.current?.open?.(selectCard)
-              : void 0
-          }
-        />
+        <BorderBeam
+          color={[
+            { color: "#2f54eb", percent: 0 },
+            { color: "#722ed1", percent: 44 },
+            { color: "#ff85c0", percent: 100 }
+          ]}
+          style={{ opacity: !!selectCard?.length ? 1 : 0 }}
+        >
+          <FloatButton
+            icon={<ShoppingCartOutlined />}
+            badge={{
+              count: selectCard?.length,
+              overflowCount: 999,
+              className: style.badgezindex
+            }}
+            onClick={
+              !!selectCard?.length
+                ? () => editCardDrawerInstance.current?.open?.(selectCard)
+                : void 0
+            }
+          />
+        </BorderBeam>
       </FloatButton.Group>
       <EditCardDrawer ref={editCardDrawerInstance} />
     </>
