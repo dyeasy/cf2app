@@ -5,11 +5,27 @@
  * @Description:
  */
 
-import { Avatar, Button, Drawer, DrawerProps, Space, Tag, Tooltip } from "antd";
+import {
+  Avatar,
+  Badge,
+  Button,
+  Drawer,
+  DrawerProps,
+  Space,
+  Tag,
+  Tooltip
+} from "antd";
 import {
   ProColumns,
   EditableProTable,
-  ProDescriptions
+  ProDescriptions,
+  DrawerForm,
+  ProForm,
+  ProFormList,
+  ProFormText,
+  ProCard,
+  ProFormSelect,
+  ProFormTreeSelect
 } from "@ant-design/pro-components";
 import {
   forwardRef,
@@ -19,19 +35,21 @@ import {
   useEffect,
   useMemo,
   useState,
-  useImperativeHandle
+  useImperativeHandle,
+  cloneElement
 } from "react";
 import { IAtomicItemType, ICardItemType } from "@/typing";
 import { AppstoreTwoTone } from "@ant-design/icons";
 import { ExpandableConfig } from "antd/es/table/interface";
 import { getViewName } from "../util";
 import { invoke } from "@tauri-apps/api/core";
+import style from "./createtask.module.scss"
 
-interface IEditCardDrawerProps {
+interface ICreateTaskDrawerProps {
   drawerProps?: Omit<DrawerProps, "open">;
 }
 
-export interface IEditCardDrawerRef {
+export interface ICreateTaskDrawerRef {
   open?: (data?: ICardItemType[]) => void;
 }
 
@@ -84,9 +102,9 @@ const expandedRowRender: ExpandableConfig<ICardItemType>["expandedRowRender"] =
     );
   };
 
-export const EditCardDrawer = forwardRef<
-  IEditCardDrawerRef,
-  IEditCardDrawerProps
+export const CreateTaskDrawer = forwardRef<
+  ICreateTaskDrawerRef,
+  ICreateTaskDrawerProps
 >((props, ref) => {
   const { drawerProps } = props;
   const [show, setShow] = useState(false);
@@ -217,47 +235,76 @@ export const EditCardDrawer = forwardRef<
   useImperativeHandle(ref, () => ({
     open
   }));
+  //   return (
+  //     <Drawer
+  //       title="创建"
+  //       size="82%"
+  //       open={show}
+  //       destroyOnHidden
+  //       afterOpenChange={() => {
+  //         if (!open) {
+  //           setDataSource(void 0);
+  //         }
+  //       }}
+  //       footer={
+  //         <Space>
+  //           <Button>取消</Button>
+  //           <Button type="primary">确定</Button>
+  //         </Space>
+  //       }
+  //       onClose={close}
+  //       {...drawerProps}
+  //     >
+  //       <EditableProTable<ICardItemType>
+  //         rowKey="key"
+  //         value={dataSource}
+  //         columns={columns}
+  //         size="middle"
+  //         onChange={(v) => {
+  //           setDataSource(v as any);
+  //         }}
+  //         editable={{
+  //           type: "single",
+  //           editableKeys,
+  //           onChange: (key) => {
+  //             console.log('fsafdsa',key)
+  //             setEditableRowKeys(key);
+  //           },
+  //         }}
+  //         expandable={{
+  //           expandedRowRender
+  //         }}
+  //       />
+  //     </Drawer>
+  //   );
   return (
-    <Drawer
-      title="创建"
-      size="82%"
+    <DrawerForm
+      title="创建任务"
+      width="82%"
       open={show}
-      destroyOnHidden
-      afterOpenChange={() => {
-        if (!open) {
-          setDataSource(void 0);
-        }
-      }}
-      footer={
-        <Space>
-          <Button>取消</Button>
-          <Button type="primary">确定</Button>
-        </Space>
-      }
-      onClose={close}
-      {...drawerProps}
+      drawerProps={{ destroyOnHidden: true, onClose: close }}
     >
-      <EditableProTable<ICardItemType>
-        rowKey="key"
-        value={dataSource}
-        columns={columns}
-        size="middle"
-        onChange={(v) => {
-          setDataSource(v as any);
+      <ProFormList<ICardItemType>
+        creatorButtonProps={false}
+        name="task"
+        className={style.scenelist}
+        initialValue={dataSource}
+        itemRender={({ listDom, action }, { record }) => {
+          //@ts-ignore
+          const _listDom = cloneElement(listDom, {
+            style: { marginTop: 20 }
+          });
+          return (
+            <Badge.Ribbon text={record?.sceneData?.title} placement="start">
+              <ProCard size="small">{_listDom}</ProCard>
+            </Badge.Ribbon>
+          );
         }}
-        editable={{
-          type: "single",
-          editableKeys,
-          onChange: (key) => {
-            console.log('fsafdsa',key)
-            setEditableRowKeys(key);
-          },
-        }}
-        expandable={{
-          expandedRowRender
-        }}
-      />
-    </Drawer>
+      >
+        <ProFormSelect label="onPageInit" name="onPageInit" />
+        <ProFormTreeSelect label="onClick" name="onClick" />
+      </ProFormList>
+    </DrawerForm>
   );
 });
 

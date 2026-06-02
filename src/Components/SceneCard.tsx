@@ -30,14 +30,14 @@ import {
   SettingOutlined,
   ShoppingCartOutlined
 } from "@ant-design/icons";
-import { EditCardDrawer, IEditCardDrawerRef } from "./EditCard";
+import { CreateTaskDrawer, ICreateTaskDrawerRef } from "./CreateTask";
 import style from "./scenecard.module.scss";
 import { invoke } from "@tauri-apps/api/core";
 interface ISceneCardProps {}
 
 export function SceneCard(props: ISceneCardProps) {
   const [selectCard, setSelectCard] = useState<ICardItemType[]>();
-  const editCardDrawerInstance = useRef<IEditCardDrawerRef>(null);
+  const createTaskDrawerInstance = useRef<ICreateTaskDrawerRef>(null);
 
   const columns: ProColumns<ICardItemType>[] = [
     {
@@ -57,7 +57,7 @@ export function SceneCard(props: ISceneCardProps) {
     {
       title: "场景名称",
       dataIndex: ["sceneData", "title"],
-      listSlot: "title",
+      listSlot: "title"
     },
     {
       title: "操作",
@@ -162,13 +162,13 @@ export function SceneCard(props: ISceneCardProps) {
             }}
             onClick={
               !!selectCard?.length
-                ? () => editCardDrawerInstance.current?.open?.(selectCard)
+                ? () => createTaskDrawerInstance.current?.open?.(selectCard)
                 : void 0
             }
           />
         </BorderBeam>
       </FloatButton.Group>
-      <EditCardDrawer ref={editCardDrawerInstance} />
+      <CreateTaskDrawer ref={createTaskDrawerInstance} />
     </>
   );
 }
