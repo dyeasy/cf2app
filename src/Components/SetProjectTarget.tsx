@@ -19,6 +19,7 @@ export function SetProjectTarget() {
   const [issuccess, setIssuccess] = useState<boolean>(false);
   async function selectDirectory() {
     try {
+        console.log('fdafdsa')
       setIssuccess(true);
       const selected = await open({
         directory: true,

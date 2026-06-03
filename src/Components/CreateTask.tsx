@@ -25,7 +25,8 @@ import {
   ProFormText,
   ProCard,
   ProFormSelect,
-  ProFormTreeSelect
+  ProFormTreeSelect,
+  ProFormDependency
 } from "@ant-design/pro-components";
 import {
   forwardRef,
@@ -43,7 +44,7 @@ import { AppstoreTwoTone } from "@ant-design/icons";
 import { ExpandableConfig } from "antd/es/table/interface";
 import { getViewName } from "../util";
 import { invoke } from "@tauri-apps/api/core";
-import style from "./createtask.module.scss"
+import style from "./createtask.module.scss";
 
 interface ICreateTaskDrawerProps {
   drawerProps?: Omit<DrawerProps, "open">;
@@ -52,6 +53,37 @@ interface ICreateTaskDrawerProps {
 export interface ICreateTaskDrawerRef {
   open?: (data?: ICardItemType[]) => void;
 }
+
+const DynamicEventFlowTreeSelect = ({
+  sceneId,
+  name
+}: {
+  sceneId: string;
+  name: string;
+}) => {
+  const [options, setOptions] = useState([]);
+
+  const loadData = async () => {
+    if (!sceneId) return;
+    try {
+      console.log("哈只");
+      const data = await invoke("get_scene_eventflow", { sceneId });
+      //   setOptions(data || []);
+    } catch (e) {}
+  };
+
+  return (
+    <ProFormTreeSelect
+      label="onClick"
+      name={name}
+      options={options}
+      fieldProps={{
+        onPopupVisibleChange(open) {},
+        onOpenChange: (open) => open && loadData()
+      }}
+    />
+  );
+};
 
 const expandedRowRender: ExpandableConfig<ICardItemType>["expandedRowRender"] =
   function (record) {
@@ -108,11 +140,8 @@ export const CreateTaskDrawer = forwardRef<
 >((props, ref) => {
   const { drawerProps } = props;
   const [show, setShow] = useState(false);
-  const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([]);
   const [atomic, setAtomic] = useState<IAtomicItemType[]>();
   const [dataSource, setDataSource] = useState<ICardItemType[] | undefined>();
-  const { eventFlowParams, setEventFlowParams } =
-    useState<Record<string, any>>();
 
   async function getAtomicsData() {
     try {
@@ -151,158 +180,46 @@ export const CreateTaskDrawer = forwardRef<
     return void 0;
   }, [atomic]);
 
-  const columns: ProColumns<ICardItemType>[] = [
-    {
-      title: "场景名称",
-      dataIndex: ["sceneData", "title"],
-      editable: false,
-      ellipsis: true,
-      fixed: "left"
-    },
-    {
-      title: "onPageInit",
-      dataIndex: "onPageInit",
-      valueType: "select",
-      fieldProps: {
-        mode: "multiple", // 关键：设置为多选
-        allowClear: true, // 可选：允许清空
-        maxTagCount: 4, //
-        maxTagPlaceholder: (omittedValues) => (
-          <Tooltip
-            styles={{ root: { pointerEvents: "none" } }}
-            title={omittedValues.map(({ label }) => label).join(", ")}
-          >
-            <span>+ {omittedValues.length}...</span>
-          </Tooltip>
-        )
-      },
-      valueEnum: atomicOptions,
-      width: 280
-    },
-    {
-      title: "onClick",
-      dataIndex: "onClick",
-      valueType: "treeSelect",
-      fieldProps: {
-        mode: "tags", // 关键：设置为多选
-        allowClear: true, // 可选：允许清空
-        maxTagCount: 4, //
-        treeCheckable: true
-        // maxTagPlaceholder: (omittedValues) => (
-        //   <Tooltip
-        //     styles={{ root: { pointerEvents: "none" } }}
-        //     title={omittedValues.map(({ label }) => label).join(", ")}
-        //   >
-        //     <span>+ {omittedValues.length}...</span>
-        //   </Tooltip>
-        // )
-      },
-      //   valueEnum: atomicOptions,
-      //   params: { name: "aaa" },
-      request: async (_, record) => {
-        // 关键：只在当前行处于编辑状态时才请求
-        if (!editableKeys.includes(record.key as React.Key)) {
-          return [];
-        }
-
-        console.log(`正在请求 onClick 数据 - 行 ${record.key}`);
-
-        try {
-          //   const data = await invoke<IAtomicItemType[]>("get_atomics");
-          return [1, 2, 3].map((item) => ({
-            label: "212121",
-            value: "dddd"
-          }));
-        } catch (error) {
-          console.error("请求失败", error);
-          return [];
-        }
-      },
-      width: 280
-    },
-    {
-      title: "操作",
-      valueType: "option",
-      width: 140,
-      render: (text, record, _, action) => [
-        <a key="editable" onClick={() => action?.startEditable?.(record.key)}>
-          编辑
-        </a>
-      ]
-    }
-  ];
-
   useImperativeHandle(ref, () => ({
     open
   }));
-  //   return (
-  //     <Drawer
-  //       title="创建"
-  //       size="82%"
-  //       open={show}
-  //       destroyOnHidden
-  //       afterOpenChange={() => {
-  //         if (!open) {
-  //           setDataSource(void 0);
-  //         }
-  //       }}
-  //       footer={
-  //         <Space>
-  //           <Button>取消</Button>
-  //           <Button type="primary">确定</Button>
-  //         </Space>
-  //       }
-  //       onClose={close}
-  //       {...drawerProps}
-  //     >
-  //       <EditableProTable<ICardItemType>
-  //         rowKey="key"
-  //         value={dataSource}
-  //         columns={columns}
-  //         size="middle"
-  //         onChange={(v) => {
-  //           setDataSource(v as any);
-  //         }}
-  //         editable={{
-  //           type: "single",
-  //           editableKeys,
-  //           onChange: (key) => {
-  //             console.log('fsafdsa',key)
-  //             setEditableRowKeys(key);
-  //           },
-  //         }}
-  //         expandable={{
-  //           expandedRowRender
-  //         }}
-  //       />
-  //     </Drawer>
-  //   );
   return (
     <DrawerForm
       title="创建任务"
       width="82%"
       open={show}
       drawerProps={{ destroyOnHidden: true, onClose: close }}
+      grid={true}
     >
       <ProFormList<ICardItemType>
         creatorButtonProps={false}
         name="task"
         className={style.scenelist}
         initialValue={dataSource}
+        copyIconProps={false}
+        min={1}
         itemRender={({ listDom, action }, { record }) => {
-          //@ts-ignore
-          const _listDom = cloneElement(listDom, {
-            style: { marginTop: 20 }
-          });
           return (
             <Badge.Ribbon text={record?.sceneData?.title} placement="start">
-              <ProCard size="small">{_listDom}</ProCard>
+              <ProCard extra={action} size="small">
+                {listDom}
+              </ProCard>
             </Badge.Ribbon>
           );
         }}
       >
-        <ProFormSelect label="onPageInit" name="onPageInit" />
-        <ProFormTreeSelect label="onClick" name="onClick" />
+        <ProFormSelect
+          label="onPageInit"
+          name="onPageInit"
+          valueEnum={atomicOptions}
+          mode="multiple"
+        />
+        <ProFormDependency name={["key"]}>
+          {({ key }) => {
+            console.log("values", key);
+            return <DynamicEventFlowTreeSelect sceneId={key} name="onClick" />;
+          }}
+        </ProFormDependency>
       </ProFormList>
     </DrawerForm>
   );
