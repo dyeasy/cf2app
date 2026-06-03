@@ -79,10 +79,10 @@ pub fn get_scene_eventflow(scene_id: &str, state: tauri::State<'_, AppState>) ->
                 let extension_str = path.extension().and_then(|ext| ext.to_str());
                 match extension_str {
                     Some("ts") => {
-                        let code = fs::read_to_string(&path)
-                            .map_err(|e| anyhow::anyhow!("读取文件失败: {}", e))?;
-                        create_swc_ecma_parser(&code, false)
-                            .map_err(|e| anyhow::anyhow!("解析 TS 文件失败: {}", e))?;
+                        // let code = fs::read_to_string(&path)
+                        //     .map_err(|e| anyhow::anyhow!("读取文件失败: {}", e))?;
+                        // create_swc_ecma_parser(&code, false)
+                        //     .map_err(|e| anyhow::anyhow!("解析 TS 文件失败: {}", e))?;
                         // println!("这是一个 TypeScript 文件{}", code);
                     }
                     Some("tsx") => {

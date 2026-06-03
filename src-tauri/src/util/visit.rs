@@ -5,7 +5,9 @@
  * @Description:
  */
 
-use swc_ecma_ast::{ExportSpecifier, ModuleExportName, NamedExport, VarDeclarator};
+use swc_ecma_ast::{
+    CallExpr, ExportSpecifier, Expr, ModuleExportName, NamedExport, Pat, VarDeclarator,
+};
 use swc_ecma_visit::Visit;
 
 use crate::mystruct::{AtomicsExportInfo, EventFlow, ExportItem};
@@ -32,8 +34,56 @@ impl Visit for AtomicsExportInfo {
     }
 }
 
+fn is_act_event_flow_bind(expr: &Expr) -> bool {
+    expr.as_call()
+        .and_then(|call| call.callee.as_expr())
+        .and_then(|callee| callee.as_member())
+        .map(|member| {
+            let obj_ok = member
+                .obj
+                .as_ident()
+                .map_or(false, |id| id.sym == "actEventFlow");
+            let prop_ok = member
+                .prop
+                .as_ident()
+                .map_or(false, |id: &swc_ecma_ast::IdentName| id.sym == "bind");
+            obj_ok && prop_ok
+        })
+        .unwrap_or(false)
+}
+
 impl Visit for EventFlow {
     fn visit_var_declarator(&mut self, node: &VarDeclarator) {
-        println!("访问变量声明: {:?}", node.name);
+        // println!("访问变量声明: {:?}", node.name);
+        let Pat::Ident(ident) = &node.name else {
+            return;
+        };
+        let var_name = ident.sym.to_string();
+        let Some(init) = &node.init else {
+            return;
+        };
+
+        let is_bind = init
+            .as_call()
+            .and_then(|call| call.callee.as_expr())
+            .and_then(|callee| callee.as_member())
+            .map(|member| {
+                let obj_ok = member
+                    .obj
+                    .as_ident()
+                    .map_or(false, |id| id.sym == "actEventFlow");
+                let prop_ok = member
+                    .prop
+                    .as_ident()
+                    .map_or(false, |id: &swc_ecma_ast::IdentName| id.sym == "bind");
+                obj_ok && prop_ok
+            })
+            .unwrap_or(false);
+
+        if is_bind {
+            println!("找到 actEventFlow.bind 调用: {}", var_name);
+            // self.result.push(var_name);
+        }
     }
+    fn visit_call_expr(&mut self, node: &CallExpr) {}
 }

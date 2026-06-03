@@ -151,16 +151,15 @@ export const CreateTaskDrawer = forwardRef<
     } catch (error) {}
   }
 
-  async function getEventFlow() {
-    try {
-      await invoke("get_scene_eventflow", { sceneId: "bodyRecognition" });
-    } catch (error) {}
-  }
+//   async function getEventFlow() {
+//     try {
+//       await invoke("get_scene_eventflow", { sceneId: "bodyRecognition" });
+//     } catch (error) {}
+//   }
 
   useEffect(() => {
     if (show) {
       getAtomicsData();
-      getEventFlow();
     }
   }, [show]);
 
@@ -216,7 +215,6 @@ export const CreateTaskDrawer = forwardRef<
         />
         <ProFormDependency name={["key"]}>
           {({ key }) => {
-            console.log("values", key);
             return <DynamicEventFlowTreeSelect sceneId={key} name="onClick" />;
           }}
         </ProFormDependency>
