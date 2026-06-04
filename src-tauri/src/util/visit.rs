@@ -6,7 +6,7 @@
  */
 
 use swc_ecma_ast::{
-    CallExpr, ExportSpecifier, Expr, ModuleExportName, NamedExport, Pat, VarDeclarator,
+    CallExpr, Callee, ExportSpecifier, Expr, Lit, ModuleExportName, NamedExport, Pat, VarDeclarator,
 };
 use swc_ecma_visit::Visit;
 
@@ -54,7 +54,6 @@ fn is_act_event_flow_bind(expr: &Expr) -> bool {
 
 impl Visit for EventFlow {
     fn visit_var_declarator(&mut self, node: &VarDeclarator) {
-        // println!("访问变量声明: {:?}", node.name);
         let Pat::Ident(ident) = &node.name else {
             return;
         };
@@ -81,9 +80,21 @@ impl Visit for EventFlow {
             .unwrap_or(false);
 
         if is_bind {
-            println!("找到 actEventFlow.bind 调用: {}", var_name);
-            // self.result.push(var_name);
+            self.current_bind_variables.insert(var_name);
         }
     }
-    fn visit_call_expr(&mut self, node: &CallExpr) {}
+    fn visit_call_expr(&mut self, node: &CallExpr) {
+        let Some(ident) = &node.callee.as_expr().and_then(|e| e.as_ident()) else {
+            return;
+        };
+
+        let func_name = ident.sym.to_string();
+        if self.current_bind_variables.contains(&func_name) {
+            if let Some(Expr::Lit(Lit::Str(str_lit))) = &node.args.first().map(|arg| &*arg.expr) {
+                let arg = str_lit.value.as_str().unwrap().to_string();
+                println!("🎉 提取到最终目标参数: {}", arg);
+                self.result.push(arg);
+            }
+        }
+    }
 }

@@ -45,7 +45,10 @@ fn create_swc_ecma_parser(code: &str, isTsx: bool) -> Result<Vec<String>, anyhow
             .map_err(|e| anyhow::anyhow!("解析 TS/TSX 文件失败: {:?}", e))?;
 
         // 7. 顺理成章地执行遍历
-        let mut visitor = EventFlow { result: vec![] };
+        let mut visitor = EventFlow {
+            result: vec![],
+            current_bind_variables: Default::default(),
+        };
         module.visit_with(&mut visitor);
 
         Ok(visitor.result)

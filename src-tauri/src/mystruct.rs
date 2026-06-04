@@ -1,5 +1,3 @@
-use std::path::Path;
-
 /*
  * @Author: jiangxin
  * @Date: 2026-05-27 13:19:25
@@ -7,6 +5,7 @@ use std::path::Path;
  * @Description:
  */
 use serde::{Deserialize, Serialize};
+use std::{collections::HashSet, path::Path};
 
 #[derive(Serialize, Deserialize)] // 必须实现 Serialize，Tauri 才能把它转成 JSON
 pub struct MyError {
@@ -74,4 +73,5 @@ pub struct AtomicsExportInfo {
 #[derive(serde::Serialize, Debug)]
 pub struct EventFlow {
     pub result: Vec<String>,
+    pub current_bind_variables: HashSet<String>,
 }
