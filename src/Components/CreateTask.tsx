@@ -255,25 +255,25 @@ export const CreateTaskDrawer = forwardRef<
               name="onClick"
               fieldProps={{
                 multiple: true,
-                maxTagCount: 0, // 不显示任何 Tag
-                tagRender: () => <></>, // 彻底不渲染 Tag
                 displayRender: (labels, selectedOptions) => {
-      console.log("displayRender 执行了", selectedOptions); // 调试用
+                  if (!selectedOptions || selectedOptions.length === 0) {
+                    return "";
+                  }
 
-      if (!selectedOptions || selectedOptions.length === 0) {
-        return "请选择...";
-      }
-
-      // 极简处理：直接拼接所有子级名称
-      const texts = selectedOptions.map(option => {
-        if (Array.isArray(option.label) && option.label.length >= 2) {
-          return `${option.label[0]}: ${option.label[1]}`;
-        }
-        return option.label || option.value || '';
-      });
-
-      return texts.join(' | ');
-    }
+                  return selectedOptions
+                    .map((option) => {
+                      // option.label 通常是数组 [父名称, 子名称]
+                      if (
+                        Array.isArray(option.label) &&
+                        option.label.length >= 2
+                      ) {
+                        return `${option.label[0]}: ${option.label[1]}`;
+                      }
+                      // 兜底方案
+                      return option.label || option.value || "";
+                    })
+                    .join(" | ");
+                }
               }}
               request={async () => {
                 try {
