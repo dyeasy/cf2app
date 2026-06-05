@@ -72,6 +72,6 @@ pub struct AtomicsExportInfo {
 }
 #[derive(serde::Serialize, Debug)]
 pub struct EventFlow {
-    pub result: Vec<String>,
+    pub result: HashSet<String>,
     pub current_bind_variables: HashSet<String>,
 }

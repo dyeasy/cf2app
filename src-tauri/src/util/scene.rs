@@ -6,7 +6,12 @@
  */
 
 use anyhow::Result;
-use std::{fs, path::Path, rc::Rc};
+// use git2::SubmoduleUpdate::Default;
+use std::{
+    collections::{HashMap, HashSet},
+    fs,
+    path::Path,
+};
 use swc_common::{sync::Lrc, FilePathMapping, Globals, SourceMap, GLOBALS};
 use swc_ecma_parser::{Lexer, Parser, Syntax, TsSyntax};
 use swc_ecma_visit::VisitWith;
@@ -18,7 +23,7 @@ use crate::{
     AppState,
 };
 
-fn create_swc_ecma_parser(code: &str, isTsx: bool) -> Result<Vec<String>, anyhow::Error> {
+fn create_swc_ecma_parser(code: &str, isTsx: bool) -> Result<HashSet<String>, anyhow::Error> {
     let globals = Globals::new();
     GLOBALS.set(&globals, || {
         let cm: Lrc<SourceMap> = Lrc::new(SourceMap::new(FilePathMapping::empty()));
@@ -30,6 +35,7 @@ fn create_swc_ecma_parser(code: &str, isTsx: bool) -> Result<Vec<String>, anyhow
         let lexer = Lexer::new(
             Syntax::Typescript(TsSyntax {
                 tsx: isTsx,
+                decorators: true,
                 ..Default::default()
             }),
             Default::default(),
@@ -46,8 +52,8 @@ fn create_swc_ecma_parser(code: &str, isTsx: bool) -> Result<Vec<String>, anyhow
 
         // 7. 顺理成章地执行遍历
         let mut visitor = EventFlow {
-            result: vec![],
-            current_bind_variables: Default::default(),
+            result: HashSet::new(),
+            current_bind_variables: HashSet::new(),
         };
         module.visit_with(&mut visitor);
 
@@ -55,7 +61,10 @@ fn create_swc_ecma_parser(code: &str, isTsx: bool) -> Result<Vec<String>, anyhow
     })
 }
 
-pub fn get_scene_eventflow(scene_id: &str, state: tauri::State<'_, AppState>) -> Result<()> {
+pub fn get_scene_eventflow(
+    scene_id: &str,
+    state: tauri::State<'_, AppState>,
+) -> Result<HashMap<String, HashSet<String>>, anyhow::Error> {
     let path = state
         .project_path
         .lock()
@@ -74,26 +83,39 @@ pub fn get_scene_eventflow(scene_id: &str, state: tauri::State<'_, AppState>) ->
 
     let iter = scanner::get_target_files_from_scene(&target_dir_path, &matcher_router);
 
+    let mut results: HashMap<String, HashSet<String>> = HashMap::from([
+        (String::from("ts"), HashSet::new()),
+        (String::from("tsx"), HashSet::new()),
+    ]);
     for entry in iter {
         match entry {
             Ok(entry) => {
                 let path = entry.path();
-                println!("找到文件: {}", path.display());
-                let extension_str = path.extension().and_then(|ext| ext.to_str());
-                match extension_str {
-                    Some("ts") => {
-                        // let code = fs::read_to_string(&path)
-                        //     .map_err(|e| anyhow::anyhow!("读取文件失败: {}", e))?;
-                        // create_swc_ecma_parser(&code, false)
-                        //     .map_err(|e| anyhow::anyhow!("解析 TS 文件失败: {}", e))?;
-                        // println!("这是一个 TypeScript 文件{}", code);
-                    }
-                    Some("tsx") => {
+                // println!("找到文件: {}", path.display());
+                let ext = path
+                    .extension()
+                    .and_then(|e| e.to_str())
+                    .unwrap_or("")
+                    .trim()
+                    .to_lowercase();
+
+                match ext.as_str() {
+                    "ts" => {
                         let code = fs::read_to_string(&path)
                             .map_err(|e| anyhow::anyhow!("读取文件失败: {}", e))?;
-                        create_swc_ecma_parser(&code, true)
+
+                        let result = create_swc_ecma_parser(&code, false)
+                            .map_err(|e| anyhow::anyhow!("解析 TS 文件失败: {}", e))?;
+                        results.insert("ts".to_string(), result.clone());
+                        // println!("提取结果: {:?}", result);
+                    }
+                    "tsx" => {
+                        let code = fs::read_to_string(&path)
+                            .map_err(|e| anyhow::anyhow!("读取文件失败: {}", e))?;
+                        let result = create_swc_ecma_parser(&code, true)
                             .map_err(|e| anyhow::anyhow!("解析 TSX 文件失败: {}", e))?;
-                        // println!("这是一个 TSX 文件{}", code);
+                        results.insert("tsx".to_string(), result.clone());
+                        // println!("提取结果: {:?}", result);
                     }
                     _ => println!("未知文件类型"),
                 }
@@ -103,7 +125,7 @@ pub fn get_scene_eventflow(scene_id: &str, state: tauri::State<'_, AppState>) ->
             }
         }
     }
-    Ok(())
+    Ok(results)
 }
 
 pub fn get_scene_forwarding(

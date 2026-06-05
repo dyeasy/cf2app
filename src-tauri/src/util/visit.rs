@@ -6,9 +6,10 @@
  */
 
 use swc_ecma_ast::{
-    CallExpr, Callee, ExportSpecifier, Expr, Lit, ModuleExportName, NamedExport, Pat, VarDeclarator,
+    CallExpr, ClassProp, ExportSpecifier, Expr, Lit, ModuleExportName, NamedExport, Pat,
+    VarDeclarator,
 };
-use swc_ecma_visit::Visit;
+use swc_ecma_visit::{Visit, VisitWith};
 
 use crate::mystruct::{AtomicsExportInfo, EventFlow, ExportItem};
 
@@ -53,7 +54,17 @@ fn is_act_event_flow_bind(expr: &Expr) -> bool {
 }
 
 impl Visit for EventFlow {
+    fn visit_class_prop(&mut self, node: &ClassProp) {
+        self.current_bind_variables.clear();
+        node.visit_children_with(self);
+    }
+    // 2. 针对普通类方法的兼容，同样开启纵向搜索
+    fn visit_class_method(&mut self, node: &swc_ecma_ast::ClassMethod) {
+        self.current_bind_variables.clear();
+        node.visit_children_with(self);
+    }
     fn visit_var_declarator(&mut self, node: &VarDeclarator) {
+        node.visit_children_with(self);
         let Pat::Ident(ident) = &node.name else {
             return;
         };
@@ -62,28 +73,12 @@ impl Visit for EventFlow {
             return;
         };
 
-        let is_bind = init
-            .as_call()
-            .and_then(|call| call.callee.as_expr())
-            .and_then(|callee| callee.as_member())
-            .map(|member| {
-                let obj_ok = member
-                    .obj
-                    .as_ident()
-                    .map_or(false, |id| id.sym == "actEventFlow");
-                let prop_ok = member
-                    .prop
-                    .as_ident()
-                    .map_or(false, |id: &swc_ecma_ast::IdentName| id.sym == "bind");
-                obj_ok && prop_ok
-            })
-            .unwrap_or(false);
-
-        if is_bind {
+        if is_act_event_flow_bind(init) {
             self.current_bind_variables.insert(var_name);
         }
     }
     fn visit_call_expr(&mut self, node: &CallExpr) {
+        node.visit_children_with(self);
         let Some(ident) = &node.callee.as_expr().and_then(|e| e.as_ident()) else {
             return;
         };
@@ -92,8 +87,7 @@ impl Visit for EventFlow {
         if self.current_bind_variables.contains(&func_name) {
             if let Some(Expr::Lit(Lit::Str(str_lit))) = &node.args.first().map(|arg| &*arg.expr) {
                 let arg = str_lit.value.as_str().unwrap().to_string();
-                println!("🎉 提取到最终目标参数: {}", arg);
-                self.result.push(arg);
+                self.result.insert(arg);
             }
         }
     }

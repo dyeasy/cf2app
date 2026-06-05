@@ -6,43 +6,36 @@
  */
 
 import {
-  Avatar,
   Badge,
-  Button,
-  Drawer,
+  Card,
+  Col,
   DrawerProps,
+  Row,
   Space,
   Tag,
-  Tooltip
+  Tree,
+  TreeSelect
 } from "antd";
 import {
-  ProColumns,
-  EditableProTable,
   ProDescriptions,
   DrawerForm,
   ProForm,
-  ProFormList,
-  ProFormText,
   ProCard,
   ProFormSelect,
   ProFormTreeSelect,
-  ProFormDependency
+  ProFormList
 } from "@ant-design/pro-components";
 import {
   forwardRef,
   FunctionComponent,
-  ForwardRefRenderFunction,
-  Forw,
   useEffect,
   useMemo,
   useState,
-  useImperativeHandle,
-  cloneElement
+  useImperativeHandle
 } from "react";
 import { IAtomicItemType, ICardItemType } from "@/typing";
-import { AppstoreTwoTone } from "@ant-design/icons";
 import { ExpandableConfig } from "antd/es/table/interface";
-import { getViewName } from "../util";
+import { getTreeData, getViewName } from "../util";
 import { invoke } from "@tauri-apps/api/core";
 import style from "./createtask.module.scss";
 
@@ -54,20 +47,18 @@ export interface ICreateTaskDrawerRef {
   open?: (data?: ICardItemType[]) => void;
 }
 
-const DynamicEventFlowTreeSelect = ({
-  sceneId,
-  name
-}: {
+const DynamicEventFlowTreeSelect: FunctionComponent<{
   sceneId: string;
   name: string;
-}) => {
-  const [options, setOptions] = useState([]);
-
+}> = (props) => {
+  const { sceneId, name } = props;
   const loadData = async () => {
     if (!sceneId) return;
     try {
       console.log("哈只");
       const data = await invoke("get_scene_eventflow", { sceneId });
+      console.log("datadatadatadata-", data);
+
       //   setOptions(data || []);
     } catch (e) {}
   };
@@ -76,10 +67,52 @@ const DynamicEventFlowTreeSelect = ({
     <ProFormTreeSelect
       label="onClick"
       name={name}
-      options={options}
+      params={{ sceneId }}
+      request={async () => {
+        console.log(sceneId, "fdafdsa", "DynamicEventFlowTreeSelect");
+        const data = await invoke("get_scene_eventflow", { sceneId });
+        console.log("datadatadatadata-", data);
+        return [];
+      }}
       fieldProps={{
-        onPopupVisibleChange(open) {},
-        onOpenChange: (open) => open && loadData()
+        // onOpenChange: (open) => open && loadData(),
+        treeCheckable: true
+        //   treeData: [
+        //     {
+        //       title: "Node1",
+        //       value: "0-0",
+        //       key: "0-0",
+        //       children: [
+        //         {
+        //           title: "Child Node1",
+        //           value: "0-0-0",
+        //           key: "0-0-0"
+        //         }
+        //       ]
+        //     },
+        //     {
+        //       title: "Node2",
+        //       value: "0-1",
+        //       key: "0-1",
+        //       children: [
+        //         {
+        //           title: "Child Node3",
+        //           value: "0-1-0",
+        //           key: "0-1-0"
+        //         },
+        //         {
+        //           title: "Child Node4",
+        //           value: "0-1-1",
+        //           key: "0-1-1"
+        //         },
+        //         {
+        //           title: "Child Node5",
+        //           value: "0-1-2",
+        //           key: "0-1-2"
+        //         }
+        //       ]
+        //     }
+        //   ]
       }}
     />
   );
@@ -151,11 +184,11 @@ export const CreateTaskDrawer = forwardRef<
     } catch (error) {}
   }
 
-//   async function getEventFlow() {
-//     try {
-//       await invoke("get_scene_eventflow", { sceneId: "bodyRecognition" });
-//     } catch (error) {}
-//   }
+  //   async function getEventFlow() {
+  //     try {
+  //       await invoke("get_scene_eventflow", { sceneId: "bodyRecognition" });
+  //     } catch (error) {}
+  //   }
 
   useEffect(() => {
     if (show) {
@@ -190,35 +223,124 @@ export const CreateTaskDrawer = forwardRef<
       drawerProps={{ destroyOnHidden: true, onClose: close }}
       grid={true}
     >
-      <ProFormList<ICardItemType>
-        creatorButtonProps={false}
-        name="task"
-        className={style.scenelist}
-        initialValue={dataSource}
-        copyIconProps={false}
-        min={1}
-        itemRender={({ listDom, action }, { record }) => {
-          return (
-            <Badge.Ribbon text={record?.sceneData?.title} placement="start">
-              <ProCard extra={action} size="small">
-                {listDom}
-              </ProCard>
-            </Badge.Ribbon>
-          );
-        }}
-      >
-        <ProFormSelect
-          label="onPageInit"
-          name="onPageInit"
-          valueEnum={atomicOptions}
-          mode="multiple"
-        />
-        <ProFormDependency name={["key"]}>
-          {({ key }) => {
-            return <DynamicEventFlowTreeSelect sceneId={key} name="onClick" />;
-          }}
-        </ProFormDependency>
-      </ProFormList>
+      {dataSource?.map?.((m, index) => {
+        return (
+          <ProFormList<ICardItemType>
+            name={`task_${index}`}
+            key={m.key}
+            initialValue={[m]}
+            creatorButtonProps={false}
+            itemRender={({ listDom, action }, { record }) => {
+              return (
+                <Badge.Ribbon text={record?.sceneData?.title} placement="start">
+                  <ProCard extra={action} size="small">
+                    <Row>
+                      <Col span={10} offset={1}>
+                        <ProDescriptions<ICardItemType>
+                          column={2}
+                          title="详情"
+                          dataSource={m}
+                          layout="vertical"
+                          columns={[
+                            {
+                              label: "文件夹",
+                              dataIndex: "key",
+                              span: 2,
+                              render(_, entity) {
+                                return <Tag color="magenta">{entity.key}</Tag>;
+                              }
+                            },
+                            {
+                              label: "views",
+                              dataIndex: "views",
+                              render(dom, entity, index, action, schema) {
+                                console.log("entityentityentity", entity);
+                                getTreeData(entity.key, entity.views);
+                                return (
+                                  <Tree.DirectoryTree
+                                    defaultExpandAll
+                                    treeData={[
+                                      {
+                                        title: "views",
+                                        key: "0-0"
+                                        // children: entity.views?.map?.((v) => {
+                                        //     console.log('vvv',v)
+                                        //   return {
+                                        //     title: getViewName(v),
+                                        //     key: "0-0-0",
+                                        //     isLeaf: true
+                                        //   };
+                                        // })
+                                      }
+                                    ]}
+                                  />
+                                );
+                              }
+                            },
+                            {
+                              label: "actions"
+                            }
+                          ]}
+                        />
+                      </Col>
+                      <Col span={10} offset={1}>
+                        {listDom}
+                      </Col>
+                    </Row>
+                  </ProCard>
+                </Badge.Ribbon>
+              );
+            }}
+          >
+            <ProFormSelect
+              label="onPageInit"
+              name="onPageInit"
+              valueEnum={atomicOptions}
+              mode="multiple"
+            />
+            <ProFormTreeSelect
+              label="onClick"
+              name="onClick"
+              fieldProps={{
+                treeCheckable: true,
+                treeNodeLabelProp: "label",
+                tagRender(...arg){
+                    console.log('sss',...arg);
+                    
+                    return <div>fdafdsa</div>
+                }
+              }}
+              request={async () => {
+                try {
+                  const { ts, tsx } = await invoke<{
+                    ts: string[];
+                    tsx: string[];
+                  }>("get_scene_eventflow", {
+                    sceneId: m.key
+                  });
+
+                  const eventflow = [...ts, ...tsx];
+                  return eventflow?.map?.((e) => {
+                    return {
+                      title: e,
+                      value: e,
+                      children: atomic?.map?.((a, index) => {
+                        return {
+                          title: a.name,
+                          value: `${e}_${a.key}`,
+                          label: `${e}:${a.name}`
+                        };
+                      })
+                    };
+                  });
+                } catch (error) {
+                  throw error;
+                }
+              }}
+            />
+          </ProFormList>
+        );
+      })}
     </DrawerForm>
   );
 });

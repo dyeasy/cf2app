@@ -8,6 +8,7 @@ use crate::constants::{BUSINESS_ERROR_CODE, TARGET_ATOMICS_DIR};
 use crate::mystruct::{ExportItem, MyError, SceneEntry};
 use crate::util::init;
 use crate::{atomics, scene, useconfig, AppState};
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 
@@ -91,9 +92,9 @@ pub async fn get_atomics(state: tauri::State<'_, AppState>) -> Result<Vec<Export
 pub async fn get_scene_eventflow(
     scene_id: String,
     state: tauri::State<'_, AppState>,
-) -> Result<(), MyError> {
-    scene::get_scene_eventflow(&scene_id, state);
-    Ok(())
+) -> Result<HashMap<String, HashSet<String>>, MyError> {
+    scene::get_scene_eventflow(&scene_id, state)
+        .map_err(|err| MyError::new(BUSINESS_ERROR_CODE, err.to_string()))
 }
 #[tauri::command]
 pub async fn get_scene_forwarding(
