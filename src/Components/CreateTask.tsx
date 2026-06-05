@@ -8,6 +8,7 @@
 import {
   Badge,
   Card,
+  Cascader,
   Col,
   DrawerProps,
   Row,
@@ -23,7 +24,9 @@ import {
   ProCard,
   ProFormSelect,
   ProFormTreeSelect,
-  ProFormList
+  ProFormList,
+  ProFormCheckbox,
+  ProFormCascader
 } from "@ant-design/pro-components";
 import {
   forwardRef,
@@ -230,84 +233,84 @@ export const CreateTaskDrawer = forwardRef<
             key={m.key}
             initialValue={[m]}
             creatorButtonProps={false}
+            className={style.scenelist}
             itemRender={({ listDom, action }, { record }) => {
               return (
                 <Badge.Ribbon text={record?.sceneData?.title} placement="start">
-                  <ProCard extra={action} size="small">
-                    <Row>
-                      <Col span={10} offset={1}>
-                        <ProDescriptions<ICardItemType>
-                          column={2}
-                          title="详情"
-                          dataSource={m}
-                          layout="vertical"
-                          columns={[
-                            {
-                              label: "文件夹",
-                              dataIndex: "key",
-                              span: 2,
-                              render(_, entity) {
-                                return <Tag color="magenta">{entity.key}</Tag>;
-                              }
-                            },
-                            {
-                              label: "views",
-                              dataIndex: "views",
-                              render(dom, entity, index, action, schema) {
-                                console.log("entityentityentity", entity);
-                                getTreeData(entity.key, entity.views);
-                                return (
-                                  <Tree.DirectoryTree
-                                    defaultExpandAll
-                                    treeData={[
-                                      {
-                                        title: "views",
-                                        key: "0-0"
-                                        // children: entity.views?.map?.((v) => {
-                                        //     console.log('vvv',v)
-                                        //   return {
-                                        //     title: getViewName(v),
-                                        //     key: "0-0-0",
-                                        //     isLeaf: true
-                                        //   };
-                                        // })
-                                      }
-                                    ]}
-                                  />
-                                );
-                              }
-                            },
-                            {
-                              label: "actions"
-                            }
-                          ]}
-                        />
-                      </Col>
-                      <Col span={10} offset={1}>
-                        {listDom}
-                      </Col>
-                    </Row>
+                  <ProCard extra={action} size="small" gutter={20}>
+                    <ProCard colSpan={10}>fdasfdsa</ProCard>
+                    <ProCard colSpan={14}>{listDom}</ProCard>
                   </ProCard>
                 </Badge.Ribbon>
               );
             }}
           >
-            <ProFormSelect
+            <ProFormCheckbox.Group
               label="onPageInit"
               name="onPageInit"
-              valueEnum={atomicOptions}
-              mode="multiple"
+              options={atomic?.map?.((m) => m.name)}
             />
-            <ProFormTreeSelect
+            <ProFormCascader
+              label="onClick"
+              name="onClick"
+              fieldProps={{
+                multiple: true,
+                maxTagCount: 0, // 不显示任何 Tag
+                tagRender: () => <></>, // 彻底不渲染 Tag
+                displayRender: (labels, selectedOptions) => {
+      console.log("displayRender 执行了", selectedOptions); // 调试用
+
+      if (!selectedOptions || selectedOptions.length === 0) {
+        return "请选择...";
+      }
+
+      // 极简处理：直接拼接所有子级名称
+      const texts = selectedOptions.map(option => {
+        if (Array.isArray(option.label) && option.label.length >= 2) {
+          return `${option.label[0]}: ${option.label[1]}`;
+        }
+        return option.label || option.value || '';
+      });
+
+      return texts.join(' | ');
+    }
+              }}
+              request={async () => {
+                try {
+                  const { ts, tsx } = await invoke<{
+                    ts: string[];
+                    tsx: string[];
+                  }>("get_scene_eventflow", {
+                    sceneId: m.key
+                  });
+                  const eventflow = [...ts, ...tsx];
+                  return eventflow?.map?.((e) => {
+                    return {
+                      label: e,
+                      value: e,
+                      children: atomic?.map?.((a, index) => {
+                        return {
+                          label: a.name,
+                          value: a.name
+                        };
+                      })
+                    };
+                  });
+                } catch (error) {
+                  throw error;
+                }
+              }}
+            />
+            {/* <ProFormTreeSelect
               label="onClick"
               name="onClick"
               fieldProps={{
                 treeCheckable: true,
                 treeNodeLabelProp: "label",
-                tagRender(...arg){
-                    console.log('sss',...arg);
-                    
-                    return <div>fdafdsa</div>
+                tagRender(...arg) {
+                  console.log("sss", ...arg);
+
+                  return <div>fdafdsa</div>;
                 }
               }}
               request={async () => {
@@ -337,7 +340,7 @@ export const CreateTaskDrawer = forwardRef<
                   throw error;
                 }
               }}
-            />
+            /> */}
           </ProFormList>
         );
       })}
