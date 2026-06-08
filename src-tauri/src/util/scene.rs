@@ -129,9 +129,7 @@ pub fn get_scene_eventflow(
 }
 
 pub fn get_scene_forwarding(
-    scene_id: &str,
-    state: tauri::State<'_, AppState>,
-) -> Result<Vec<String>, String> {
-    println!("获取场景 {} 的转发配置", scene_id);
+    code: &str,
+) -> Result<Vec<String>, anyhow::Error> {
     Ok(Vec::new())
 }

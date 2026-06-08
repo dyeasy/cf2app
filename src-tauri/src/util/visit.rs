@@ -11,7 +11,7 @@ use swc_ecma_ast::{
 };
 use swc_ecma_visit::{Visit, VisitWith};
 
-use crate::mystruct::{AtomicsExportInfo, EventFlow, ExportItem};
+use crate::mystruct::{AtomicsExportInfo, EventFlow, ExportItem, Forwarding};
 
 impl Visit for AtomicsExportInfo {
     fn visit_named_export(&mut self, node: &NamedExport) {
@@ -91,4 +91,8 @@ impl Visit for EventFlow {
             }
         }
     }
+}
+
+impl Visit for Forwarding{
+    
 }

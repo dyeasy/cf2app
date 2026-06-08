@@ -60,7 +60,9 @@ const DynamicEventFlowTreeSelect: FunctionComponent<{
     try {
       console.log("哈只");
       const data = await invoke("get_scene_eventflow", { sceneId });
-      console.log("datadatadatadata-", data);
+      const bbb = await invoke("get_scene_forwarding", { sceneId });
+      //   console.log("datadatadatadata-", data);
+      console.log("bbbbbbbbb-", bbb);
 
       //   setOptions(data || []);
     } catch (e) {}
@@ -283,6 +285,9 @@ export const CreateTaskDrawer = forwardRef<
                   }>("get_scene_eventflow", {
                     sceneId: m.key
                   });
+
+                  const bbb=await invoke("get_scene_forwarding",{sceneId: m.key});
+                  console.log('dfaa',bbb)
                   const eventflow = [...ts, ...tsx];
                   return eventflow?.map?.((e) => {
                     return {

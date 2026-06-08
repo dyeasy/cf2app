@@ -75,3 +75,9 @@ pub struct EventFlow {
     pub result: HashSet<String>,
     pub current_bind_variables: HashSet<String>,
 }
+
+#[derive(serde::Serialize, Debug)]
+pub struct Forwarding {
+    pub components: Vec<String>,
+    pub apis: Vec<String>,
+}

@@ -4,7 +4,7 @@
  * @Company: orientsec.com.cn
  * @Description:
  */
-use crate::constants::{BUSINESS_ERROR_CODE, TARGET_ATOMICS_DIR};
+use crate::constants::{BUSINESS_ERROR_CODE, TARGET_ATOMICS_DIR, TARGET_SCENE_DIR};
 use crate::mystruct::{ExportItem, MyError, SceneEntry};
 use crate::util::init;
 use crate::{atomics, scene, useconfig, AppState};
@@ -101,7 +101,25 @@ pub async fn get_scene_forwarding(
     scene_id: String,
     state: tauri::State<'_, AppState>,
 ) -> Result<(), MyError> {
-    println!("获取场景 {} 的转发配置", scene_id);
-    scene::get_scene_forwarding(&scene_id, state);
+    // println!("获取场景 {} 的转发配置", scene_id);
+    // scene::get_scene_forwarding(&scene_id, state);
+    let Some(path) = state.project_path.lock().unwrap().clone() else {
+        return Err(MyError::new(BUSINESS_ERROR_CODE, "尚未选择项目路径"));
+    };
+    let target_dir_path = Path::new(&path)
+        .join(TARGET_SCENE_DIR)
+        .join(&scene_id)
+        .join("type.ts");
+    let _ = fs::read_to_string(&target_dir_path)
+        .map_err(|_| {
+            MyError::new(
+                BUSINESS_ERROR_CODE,
+                format!("无法读取文件: {}", target_dir_path.to_string_lossy()),
+            )
+        })
+        .and_then(|content| {
+            scene::get_scene_forwarding(&content)
+                .map_err(|msg| MyError::new(BUSINESS_ERROR_CODE, msg.to_string()))
+        });
     Ok(())
 }
