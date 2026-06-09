@@ -5,7 +5,10 @@
  * @Description:
  */
 use serde::{Deserialize, Serialize};
-use std::{collections::HashSet, path::Path};
+use std::{
+    collections::{HashMap, HashSet},
+    path::Path,
+};
 
 #[derive(Serialize, Deserialize)] // 必须实现 Serialize，Tauri 才能把它转成 JSON
 pub struct MyError {
@@ -78,6 +81,5 @@ pub struct EventFlow {
 
 #[derive(serde::Serialize, Debug)]
 pub struct Forwarding {
-    pub components: Vec<String>,
-    pub apis: Vec<String>,
+    pub result: HashMap<String, Vec<String>>,
 }

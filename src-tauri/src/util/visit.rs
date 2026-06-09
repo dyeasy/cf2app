@@ -6,8 +6,7 @@
  */
 
 use swc_ecma_ast::{
-    CallExpr, ClassProp, ExportSpecifier, Expr, Lit, ModuleExportName, NamedExport, Pat,
-    VarDeclarator,
+    CallExpr, ClassProp, ExportSpecifier, Expr, Lit, ModuleExportName, NamedExport, Pat, TsTypeAliasDecl, VarDeclarator
 };
 use swc_ecma_visit::{Visit, VisitWith};
 
@@ -94,5 +93,8 @@ impl Visit for EventFlow {
 }
 
 impl Visit for Forwarding{
-    
+    fn visit_ts_type_alias_decl(&mut self, node: &TsTypeAliasDecl) {
+        let type_name = node.id.sym.to_string();
+        println!("访问到类型别名: {}", type_name);
+    }
 }

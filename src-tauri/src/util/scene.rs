@@ -5,7 +5,7 @@
  * @Description:
  */
 
-use anyhow::Result;
+use anyhow::{Result};
 // use git2::SubmoduleUpdate::Default;
 use std::{
     collections::{HashMap, HashSet},
@@ -17,10 +17,7 @@ use swc_ecma_parser::{Lexer, Parser, Syntax, TsSyntax};
 use swc_ecma_visit::VisitWith;
 
 use crate::{
-    constants::TARGET_SCENE_DIR,
-    mystruct::EventFlow,
-    scanner::{self, create_global_matcher},
-    AppState,
+    AppState, constants::TARGET_SCENE_DIR, mystruct::{EventFlow, Forwarding}, scanner::{self, create_global_matcher}
 };
 
 fn create_swc_ecma_parser(code: &str, isTsx: bool) -> Result<HashSet<String>, anyhow::Error> {
@@ -128,8 +125,38 @@ pub fn get_scene_eventflow(
     Ok(results)
 }
 
-pub fn get_scene_forwarding(
-    code: &str,
-) -> Result<Vec<String>, anyhow::Error> {
-    Ok(Vec::new())
+pub fn get_scene_forwarding(code: &str) -> Result<HashMap<String, Vec<String>>, anyhow::Error> {
+    let globals = Globals::new();
+    GLOBALS.set(&globals, || {
+        let cm: Lrc<SourceMap> = Lrc::new(SourceMap::new(FilePathMapping::empty()));
+        let fm = cm.new_source_file(
+            swc_common::FileName::Custom("index.ts".into()).into(),
+            code.to_string(),
+        );
+
+        let lexer = Lexer::new(
+            Syntax::Typescript(TsSyntax {
+                tsx: false,
+                decorators: true,
+                ..Default::default()
+            }),
+            Default::default(),
+            (&*fm).into(), // 🎯 关键：让输入流带上正确的 SourceMap 坐标范围
+            None,
+        );
+
+        let mut parser = Parser::new_from(lexer);
+
+        // 6. 解析 Module
+        let module = parser
+            .parse_module()
+            .map_err(|e| anyhow::anyhow!("解析 TS/TSX 文件失败: {:?}", e))?;
+
+        // 7. 顺理成章地执行遍历
+        let mut visitor = Forwarding {
+            result: HashMap::new(),
+        };
+        module.visit_with(&mut visitor);
+        Ok(visitor.result)
+    })
 }

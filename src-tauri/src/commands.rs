@@ -100,7 +100,7 @@ pub async fn get_scene_eventflow(
 pub async fn get_scene_forwarding(
     scene_id: String,
     state: tauri::State<'_, AppState>,
-) -> Result<(), MyError> {
+) -> Result<HashMap<String, Vec<String>>, MyError> {
     // println!("获取场景 {} 的转发配置", scene_id);
     // scene::get_scene_forwarding(&scene_id, state);
     let Some(path) = state.project_path.lock().unwrap().clone() else {
@@ -110,7 +110,7 @@ pub async fn get_scene_forwarding(
         .join(TARGET_SCENE_DIR)
         .join(&scene_id)
         .join("type.ts");
-    let _ = fs::read_to_string(&target_dir_path)
+    fs::read_to_string(&target_dir_path)
         .map_err(|_| {
             MyError::new(
                 BUSINESS_ERROR_CODE,
@@ -120,6 +120,5 @@ pub async fn get_scene_forwarding(
         .and_then(|content| {
             scene::get_scene_forwarding(&content)
                 .map_err(|msg| MyError::new(BUSINESS_ERROR_CODE, msg.to_string()))
-        });
-    Ok(())
+        })
 }
