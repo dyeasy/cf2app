@@ -5,6 +5,8 @@
  * @Description:
  */
 
+use std::collections::HashSet;
+
 use swc_ecma_ast::{
     CallExpr, ClassProp, ExportSpecifier, Expr, Lit, ModuleExportName, NamedExport, Pat, TsLit,
     TsLitType, TsType, TsTypeAliasDecl, TsUnionOrIntersectionType, VarDeclarator,
@@ -109,19 +111,15 @@ impl Visit for Forwarding {
                     ..
                 }) = ts_type
                 {
-                    // let TsLit::Str(str_lit) = &lit_type.lit else {
-                    //     continue;
-                    // };
-                    // self.result.insert("component".to_string(), str_lit.value.to_string_lossy())
                     self.result
                         .entry(String::from("component"))
-                        .or_insert(Vec::new())
-                        .push(str_lit.value.to_string_lossy().into_owned());
-                    println!("aaa {:?}", str_lit.value);
+                        .or_insert(HashSet::default())
+                        .insert(str_lit.value.to_string_lossy().into_owned());
+                    println!("aaa {:?}", self.result);
                 }
             }
         } else if type_name == "Forwarding" {
-            self.result.entry(String::from("api")).or_insert(Vec::new());
+            // self.result.entry(String::from("api")).or_insert(Vec::new());
             println!("正在处理类型: {}", type_name);
         }
 

@@ -125,7 +125,7 @@ pub fn get_scene_eventflow(
     Ok(results)
 }
 
-pub fn get_scene_forwarding(code: &str) -> Result<HashMap<String, Vec<String>>, anyhow::Error> {
+pub fn get_scene_forwarding(code: &str) -> Result<HashMap<String, HashSet<String>>, anyhow::Error> {
     let globals = Globals::new();
     GLOBALS.set(&globals, || {
         let cm: Lrc<SourceMap> = Lrc::new(SourceMap::new(FilePathMapping::empty()));
