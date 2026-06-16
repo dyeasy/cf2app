@@ -5,8 +5,6 @@
  * @Description:
  */
 
-use std::collections::HashSet;
-
 use swc_ecma_ast::{
     CallExpr, ClassProp, ExportSpecifier, Expr, Lit, ModuleExportName, NamedExport, Pat, TsLit,
     TsLitType, TsType, TsTypeAliasDecl, TsUnionOrIntersectionType, VarDeclarator,
@@ -113,7 +111,7 @@ impl Visit for Forwarding {
                 {
                     self.result
                         .entry(String::from("component"))
-                        .or_insert(HashSet::default())
+                        .or_insert(Default::default())
                         .insert(str_lit.value.to_string_lossy().into_owned());
                     println!("aaa {:?}", self.result);
                 }

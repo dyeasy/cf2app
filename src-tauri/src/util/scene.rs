@@ -5,19 +5,22 @@
  * @Description:
  */
 
-use anyhow::{Result};
+use anyhow::Result;
 // use git2::SubmoduleUpdate::Default;
 use std::{
     collections::{HashMap, HashSet},
     fs,
     path::Path,
 };
-use swc_common::{sync::Lrc, FilePathMapping, Globals, SourceMap, GLOBALS};
+use swc_common::{FilePathMapping, GLOBALS, Globals, SourceMap, sync::Lrc};
 use swc_ecma_parser::{Lexer, Parser, Syntax, TsSyntax};
 use swc_ecma_visit::VisitWith;
 
 use crate::{
-    AppState, constants::TARGET_SCENE_DIR, mystruct::{EventFlow, Forwarding}, scanner::{self, create_global_matcher}
+    AppState,
+    constants::TARGET_SCENE_DIR,
+    mystruct::{EventFlow, Forwarding},
+    scanner::{self, create_global_matcher},
 };
 
 fn create_swc_ecma_parser(code: &str, isTsx: bool) -> Result<HashSet<String>, anyhow::Error> {
@@ -154,7 +157,7 @@ pub fn get_scene_forwarding(code: &str) -> Result<HashMap<String, HashSet<String
 
         // 7. 顺理成章地执行遍历
         let mut visitor = Forwarding {
-            result: HashMap::new(),
+            result: Default::default(),
         };
         module.visit_with(&mut visitor);
         Ok(visitor.result)
