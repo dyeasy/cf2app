@@ -101,8 +101,6 @@ pub async fn get_scene_forwarding(
     scene_id: String,
     state: tauri::State<'_, AppState>,
 ) -> Result<HashMap<String, Vec<String>>, MyError> {
-    // println!("获取场景 {} 的转发配置", scene_id);
-    // scene::get_scene_forwarding(&scene_id, state);
     let Some(path) = state.project_path.lock().unwrap().clone() else {
         return Err(MyError::new(BUSINESS_ERROR_CODE, "尚未选择项目路径"));
     };

@@ -286,8 +286,10 @@ export const CreateTaskDrawer = forwardRef<
                     sceneId: m.key
                   });
 
-                  const bbb=await invoke("get_scene_forwarding",{sceneId: m.key});
-                  console.log('dfaa',bbb)
+                  const bbb = await invoke("get_scene_forwarding", {
+                    sceneId: m.key
+                  });
+                  console.log("dfaa", bbb);
                   const eventflow = [...ts, ...tsx];
                   return eventflow?.map?.((e) => {
                     return {

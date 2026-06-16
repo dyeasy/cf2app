@@ -6,7 +6,8 @@
  */
 
 use swc_ecma_ast::{
-    CallExpr, ClassProp, ExportSpecifier, Expr, Lit, ModuleExportName, NamedExport, Pat, TsTypeAliasDecl, VarDeclarator
+    CallExpr, ClassProp, ExportSpecifier, Expr, Lit, ModuleExportName, NamedExport, Pat, TsLit,
+    TsLitType, TsType, TsTypeAliasDecl, TsUnionOrIntersectionType, VarDeclarator,
 };
 use swc_ecma_visit::{Visit, VisitWith};
 
@@ -92,9 +93,38 @@ impl Visit for EventFlow {
     }
 }
 
-impl Visit for Forwarding{
+impl Forwarding {}
+
+impl Visit for Forwarding {
     fn visit_ts_type_alias_decl(&mut self, node: &TsTypeAliasDecl) {
         let type_name = node.id.sym.to_string();
-        println!("访问到类型别名: {}", type_name);
+        if type_name == "ForwardingComponentsName"
+            && let TsType::TsUnionOrIntersectionType(TsUnionOrIntersectionType::TsUnionType(union)) =
+                &*node.type_ann
+        {
+            for ty in &union.types {
+                let ts_type = &**ty;
+                if let TsType::TsLitType(TsLitType {
+                    lit: TsLit::Str(str_lit),
+                    ..
+                }) = ts_type
+                {
+                    // let TsLit::Str(str_lit) = &lit_type.lit else {
+                    //     continue;
+                    // };
+                    // self.result.insert("component".to_string(), str_lit.value.to_string_lossy())
+                    self.result
+                        .entry(String::from("component"))
+                        .or_insert(Vec::new())
+                        .push(str_lit.value.to_string_lossy().into_owned());
+                    println!("aaa {:?}", str_lit.value);
+                }
+            }
+        } else if type_name == "Forwarding" {
+            self.result.entry(String::from("api")).or_insert(Vec::new());
+            println!("正在处理类型: {}", type_name);
+        }
+
+        node.visit_children_with(self);
     }
 }
