@@ -6,8 +6,9 @@
  */
 
 use swc_ecma_ast::{
-    CallExpr, ClassProp, ExportSpecifier, Expr, Lit, ModuleExportName, NamedExport, Pat, TsLit,
-    TsLitType, TsType, TsTypeAliasDecl, TsUnionOrIntersectionType, VarDeclarator,
+    CallExpr, ClassProp, ExportSpecifier, Expr, Ident, Lit, ModuleExportName, NamedExport, Pat,
+    TsLit, TsLitType, TsPropertySignature, TsType, TsTypeAliasDecl, TsTypeAnn, TsTypeElement,
+    TsTypeLit, TsUnionOrIntersectionType, VarDeclarator,
 };
 use swc_ecma_visit::{Visit, VisitWith};
 
@@ -93,8 +94,6 @@ impl Visit for EventFlow {
     }
 }
 
-impl Forwarding {}
-
 impl Visit for Forwarding {
     fn visit_ts_type_alias_decl(&mut self, node: &TsTypeAliasDecl) {
         let type_name = node.id.sym.to_string();
@@ -109,16 +108,71 @@ impl Visit for Forwarding {
                     ..
                 }) = ts_type
                 {
-                    self.result
-                        .entry(String::from("component"))
-                        .or_insert(Default::default())
+                    self.components_val
                         .insert(str_lit.value.to_string_lossy().into_owned());
-                    println!("aaa {:?}", self.result);
+                    // self.result
+                    //     .entry(String::from("component"))
+                    //     .or_insert(Default::default())
+                    //     .insert(str_lit.value.to_string_lossy().into_owned());
                 }
             }
-        } else if type_name == "Forwarding" {
-            // self.result.entry(String::from("api")).or_insert(Vec::new());
-            println!("正在处理类型: {}", type_name);
+        }
+
+        if type_name == "Forwarding"
+            && let Some(type_lit) = node.type_ann.as_ts_type_lit()
+            && !type_lit.members.is_empty()
+        {
+            let members = &type_lit.members;
+
+            let inner_members_opt = members
+                .iter()
+                .find_map(|item| match item {
+                    TsTypeElement::TsPropertySignature(props)
+                        if let Expr::Ident(ident) = &*props.key =>
+                    {
+                        if ident.sym == self.scene_id {
+                            return Some(props);
+                        }
+
+                        None
+                    }
+                    _ => None,
+                })
+                .and_then(|n| n.type_ann.as_ref())
+                .and_then(|ann| ann.type_ann.as_ts_type_lit())
+                .map(|lit| &lit.members);
+            if let Some(inner_members) = inner_members_opt {
+                inner_members.iter().for_each(|m| {
+                    let Some(prop) = m.as_ts_property_signature() else {
+                        return;
+                    };
+
+                    let Some(Ident { sym, .. }) = prop.key.as_ident() else {
+                        return;
+                    };
+                    let key_value = sym.to_string();
+                    if key_value == "component" && !self.components_val.is_empty() {
+                        self.result
+                            .entry(key_value)
+                            .or_insert(self.components_val.to_owned());
+                        return;
+                    }
+
+                    let TsTypeAnn { type_ann, .. } = &**prop.type_ann.as_ref().unwrap();
+
+                    if key_value == "api"
+                        && let Some(TsTypeLit { members, .. }) = type_ann.as_ts_type_lit()
+                    {
+                        let api_value = members
+                            .iter()
+                            .filter_map(|f| f.as_ts_property_signature())
+                            .filter_map(|f| f.key.as_ident())
+                            .map(|f| f.sym.to_string());
+                        self.result.entry(key_value).or_default().extend(api_value);
+                        return;
+                    }
+                });
+            }
         }
 
         node.visit_children_with(self);

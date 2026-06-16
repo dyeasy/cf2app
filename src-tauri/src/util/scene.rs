@@ -128,7 +128,10 @@ pub fn get_scene_eventflow(
     Ok(results)
 }
 
-pub fn get_scene_forwarding(code: &str) -> Result<HashMap<String, HashSet<String>>, anyhow::Error> {
+pub fn get_scene_forwarding(
+    code: &str,
+    scene_id: &str,
+) -> Result<HashMap<String, HashSet<String>>, anyhow::Error> {
     let globals = Globals::new();
     GLOBALS.set(&globals, || {
         let cm: Lrc<SourceMap> = Lrc::new(SourceMap::new(FilePathMapping::empty()));
@@ -158,6 +161,8 @@ pub fn get_scene_forwarding(code: &str) -> Result<HashMap<String, HashSet<String
         // 7. 顺理成章地执行遍历
         let mut visitor = Forwarding {
             result: Default::default(),
+            scene_id: scene_id.to_string(),
+            components_val: Default::default(),
         };
         module.visit_with(&mut visitor);
         Ok(visitor.result)

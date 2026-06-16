@@ -7,7 +7,7 @@
 use crate::constants::{BUSINESS_ERROR_CODE, TARGET_ATOMICS_DIR, TARGET_SCENE_DIR};
 use crate::mystruct::{ExportItem, MyError, SceneEntry};
 use crate::util::init;
-use crate::{atomics, scene, useconfig, AppState};
+use crate::{AppState, atomics, scene, useconfig};
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::Path;
@@ -18,6 +18,12 @@ impl MyError {
             code,
             message: message.into(),
         }
+    }
+}
+
+impl std::fmt::Debug for MyError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MyError").finish()
     }
 }
 
@@ -116,7 +122,7 @@ pub async fn get_scene_forwarding(
             )
         })
         .and_then(|content| {
-            scene::get_scene_forwarding(&content)
+            scene::get_scene_forwarding(&content, &scene_id)
                 .map_err(|msg| MyError::new(BUSINESS_ERROR_CODE, msg.to_string()))
         })
 }

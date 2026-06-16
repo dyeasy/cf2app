@@ -82,4 +82,6 @@ pub struct EventFlow {
 #[derive(serde::Serialize, Debug)]
 pub struct Forwarding {
     pub result: HashMap<String, HashSet<String>>,
+    pub scene_id: String,
+    pub components_val: HashSet<String>,
 }
