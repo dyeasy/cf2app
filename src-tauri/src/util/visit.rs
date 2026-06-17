@@ -7,7 +7,7 @@
 
 use swc_ecma_ast::{
     CallExpr, ClassProp, ExportSpecifier, Expr, Ident, Lit, ModuleExportName, NamedExport, Pat,
-    TsLit, TsLitType, TsPropertySignature, TsType, TsTypeAliasDecl, TsTypeAnn, TsTypeElement,
+    Str, TsLit, TsLitType, TsPropertySignature, TsType, TsTypeAliasDecl, TsTypeAnn, TsTypeElement,
     TsTypeLit, TsUnionOrIntersectionType, VarDeclarator,
 };
 use swc_ecma_visit::{Visit, VisitWith};
@@ -97,24 +97,33 @@ impl Visit for EventFlow {
 impl Visit for Forwarding {
     fn visit_ts_type_alias_decl(&mut self, node: &TsTypeAliasDecl) {
         let type_name = node.id.sym.to_string();
-        if type_name == "ForwardingComponentsName"
-            && let TsType::TsUnionOrIntersectionType(TsUnionOrIntersectionType::TsUnionType(union)) =
-                &*node.type_ann
-        {
-            for ty in &union.types {
-                let ts_type = &**ty;
-                if let TsType::TsLitType(TsLitType {
-                    lit: TsLit::Str(str_lit),
-                    ..
-                }) = ts_type
-                {
-                    self.components_val
-                        .insert(str_lit.value.to_string_lossy().into_owned());
-                    // self.result
-                    //     .entry(String::from("component"))
-                    //     .or_insert(Default::default())
-                    //     .insert(str_lit.value.to_string_lossy().into_owned());
+        if type_name == "ForwardingComponentsName" {
+            let type_ann = &*node.type_ann;
+            match type_ann {
+                TsType::TsUnionOrIntersectionType(TsUnionOrIntersectionType::TsUnionType(
+                    union,
+                )) => {
+                    for ty in &union.types {
+                        let ts_type = &**ty;
+                        if let TsType::TsLitType(TsLitType {
+                            lit: TsLit::Str(str_lit),
+                            ..
+                        }) = ts_type
+                        {
+                            self.components_val
+                                .insert(str_lit.value.to_string_lossy().into_owned());
+                        }
+                    }
                 }
+                TsType::TsLitType(lit_type) => {
+                    let TsLit::Str(Str { value, .. }) = &lit_type.lit else {
+                        return;
+                    };
+
+                    self.components_val
+                        .insert(value.to_string_lossy().into_owned());
+                }
+                _ => {},
             }
         }
 
